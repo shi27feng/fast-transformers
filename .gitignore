@@ -5,3 +5,9 @@ dist
 *.egg-info
 *.so
 *.swp
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/

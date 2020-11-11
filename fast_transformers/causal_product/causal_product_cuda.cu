@@ -20,10 +20,10 @@ __device__ void get_result(
     const int m,
     const int L
 ) {
-    for (int l=0; l<L; l++) {
+    for (int l = 0; l < L; l++) {
         kv[n][h][e][m] += keys[n][h][l][e] * values[n][h][l][m];
         __syncthreads();
-        float res = queries[n][h][l][e]*kv[n][h][e][m];
+        float res = queries[n][h][l][e] * kv[n][h][e][m];
         atomicAdd(
             &result[n][h][l][m],
             res
@@ -64,21 +64,21 @@ __global__ void causal_dot_product_kernel(
     float* shared_kv = shared_mem;
     float* shared_results = shared_mem + shared_kv_size;
     float* shared_values = shared_results + M;
-    float* shared_keys = shared_values + M*T;
-    float* shared_queries = shared_keys + E_per_block*T;
+    float* shared_keys = shared_values + M * T;
+    float* shared_queries = shared_keys + E_per_block * T;
 
     if (threadIdx.x < M) {
         shared_results[threadIdx.x] = 0.0;
     }
 
     int t_end = (T + l_offset) <= L ? T : L - l_offset;
-    for (int i = threadIdx.x; i < (t_end*M); i += blockDim.x)
+    for (int i = threadIdx.x; i < (t_end * M); i += blockDim.x)
     {
         int t = int(i / M) + l_offset;
         int d = i % M;
         shared_values[i] = values[n][h][t][d];
     }
-    for (int i = threadIdx.x; i < (t_end*E_per_block); i += blockDim.x)
+    for (int i = threadIdx.x; i < (t_end * E_per_block); i += blockDim.x)
     {
         int t = int(i / E_per_block) + l_offset;
         int d = (i % E_per_block) + e_start;
@@ -92,11 +92,11 @@ __global__ void causal_dot_product_kernel(
         return;
     }
     shared_kv[threadIdx.x] = kv[n][h][e][m];
-    for (int t=0; t<t_end; t++) {
+    for (int t = 0; t < t_end; t++) {
         int l = t + l_offset;
-        shared_kv[e_local*M + m] += shared_keys[t*E_per_block + e_local] * shared_values[t*M + m];
+        shared_kv[e_local * M + m] += shared_keys[t * E_per_block + e_local] * shared_values[t * M + m];
         __syncthreads();
-        float res = shared_queries[t*E_per_block + e_local] * shared_kv[e_local*M + m];
+        float res = shared_queries[t * E_per_block + e_local] * shared_kv[e_local * M + m];
         atomicAdd(
             &shared_results[m],
             res
@@ -112,7 +112,7 @@ __global__ void causal_dot_product_kernel(
         }
     }
     __syncthreads();
-    kv[n][h][e][m] = shared_kv[e_local*M + m];
+    kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
 void causal_dot_product(
@@ -132,18 +132,18 @@ void causal_dot_product(
     int threads = 1024;
 
     // Shared mem max size is 48KB
-    int MUL_PER_BLOCK = min(threads, E*M);
+    int MUL_PER_BLOCK = min(threads, E * M);
     // make sure that MUL_PER_BLOCK is divisible by M;
     MUL_PER_BLOCK = int(MUL_PER_BLOCK / M) *  M;
     threads = MUL_PER_BLOCK;
-    const int blocks_per_sequence = ((E*M) + threads -1) / threads;
+    const int blocks_per_sequence = ((E * M) + threads -1) / threads;
 
     const int E_per_block = MUL_PER_BLOCK / M;
     int blocks  = N*H*blocks_per_sequence;
-    int shared_mem_const = (E_per_block + 1)*M;
-    int shared_mem_per_time = (M + 2*E_per_block);
+    int shared_mem_const = (E_per_block + 1) * M;
+    int shared_mem_per_time = (M + 2 * E_per_block);
     const int T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
-    const int shared_mem_forward = ((T*shared_mem_per_time) + shared_mem_const) * sizeof(float);
+    const int shared_mem_forward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
 
     for (int l_offset=0; l_offset < L; l_offset += T) {
      causal_dot_product_kernel
@@ -215,11 +215,11 @@ __global__ void causal_dot_backward_query_key_kernel(
     float* shared_results = shared_kv_bw + shared_kv_size;
     float* shared_results_bw = shared_results + E;
     float* shared_keys = shared_results_bw + E;
-    float* shared_values = shared_keys + E*T;
-    float* shared_gradout = shared_values + M_per_block*T;
-    float* shared_queries_bw = shared_gradout + M_per_block*T;
-    float* shared_values_bw = shared_queries_bw + E*T;
-    float* shared_gradout_bw = shared_values_bw + M_per_block*T;
+    float* shared_values = shared_keys + E * T;
+    float* shared_gradout = shared_values + M_per_block * T;
+    float* shared_queries_bw = shared_gradout + M_per_block * T;
+    float* shared_values_bw = shared_queries_bw + E * T;
+    float* shared_gradout_bw = shared_values_bw + M_per_block * T;
 
     if (threadIdx.x < E) {
         shared_results[threadIdx.x] = 0.0;
@@ -227,7 +227,7 @@ __global__ void causal_dot_backward_query_key_kernel(
     }
 
     int t_end = (T + l_offset) <= L ? T : (L - l_offset);
-    for (int i = threadIdx.x; i < (t_end*M_per_block); i += blockDim.x)
+    for (int i = threadIdx.x; i < (t_end * M_per_block); i += blockDim.x)
     {
         int t = int(i / M_per_block) + l_offset;
         int t_bw = L - t - 1;
@@ -256,14 +256,14 @@ __global__ void causal_dot_backward_query_key_kernel(
     shared_kv[threadIdx.x] = kv[n][h][e][m];
     shared_kv_bw[threadIdx.x] = kv_backwards[n][h][e][m];
 
-    for (int t=0; t<t_end; t++) {
+    for (int t = 0; t < t_end; t++) {
         int l = t + l_offset;
-        int l_b = L - l -1;
-        shared_kv[m_local*E + e] += shared_keys[t*E + e] * shared_values[t*M_per_block + m_local];
-        shared_kv_bw[m_local*E + e] += shared_queries_bw[t*E + e] * shared_gradout_bw[t*M_per_block + m_local];
+        int l_b = L - l - 1;
+        shared_kv[m_local * E + e] += shared_keys[t * E + e] * shared_values[t * M_per_block + m_local];
+        shared_kv_bw[m_local * E + e] += shared_queries_bw[t * E + e] * shared_gradout_bw[t * M_per_block + m_local];
         __syncthreads();
-        float res = shared_gradout[t*M_per_block + m_local] * shared_kv[m_local*E + e];
-        float res_bw = shared_values_bw[t*M_per_block + m_local] * shared_kv_bw[m_local*E + e];
+        float res = shared_gradout[t * M_per_block + m_local] * shared_kv[m_local * E + e];
+        float res_bw = shared_values_bw[t * M_per_block + m_local] * shared_kv_bw[m_local * E + e];
         atomicAdd(
             &shared_results[e],
             res
@@ -289,8 +289,8 @@ __global__ void causal_dot_backward_query_key_kernel(
         }
     }
     __syncthreads();
-    kv[n][h][e][m] = shared_kv[m_local*E + e];
-    kv_backwards[n][h][e][m] = shared_kv_bw[m_local*E + e];
+    kv[n][h][e][m] = shared_kv[m_local * E + e];
+    kv_backwards[n][h][e][m] = shared_kv_bw[m_local * E + e];
 }
 
 
@@ -328,15 +328,15 @@ __global__ void causal_dot_backward_value_kernel(
     float* shared_kv = shared_mem;
     float* shared_results = shared_mem + shared_kv_size;
     float* shared_gradout = shared_results + M;
-    float* shared_keys = shared_gradout + M*T;
-    float* shared_queries = shared_keys + E_per_block*T;
+    float* shared_keys = shared_gradout + M * T;
+    float* shared_queries = shared_keys + E_per_block * T;
 
     if (threadIdx.x < M) {
         shared_results[threadIdx.x] = 0.0;
     }
 
     int t_end = (T + l_offset) <= L ? T : L - l_offset;
-    for (int i = threadIdx.x; i < (t_end*M); i += blockDim.x)
+    for (int i = threadIdx.x; i < (t_end * M); i += blockDim.x)
     {
         int t = int(i / M) + l_offset;
         int t_bw = L - 1 - t;
@@ -360,12 +360,12 @@ __global__ void causal_dot_backward_value_kernel(
     }
 
     shared_kv[threadIdx.x] = kv[n][h][e][m];
-    for (int t=0; t<t_end; t++) {
+    for (int t = 0; t < t_end; t++) {
         int l = t + l_offset;
-        int l_b = L - l -1;
-        shared_kv[e_local*M + m] += shared_queries[t*E_per_block + e_local] * shared_gradout[t*M + m];
+        int l_b = L - l - 1;
+        shared_kv[e_local * M + m] += shared_queries[t * E_per_block + e_local] * shared_gradout[t * M + m];
         __syncthreads();
-        float res = shared_keys[t*E_per_block + e_local] * shared_kv[e_local*M + m];
+        float res = shared_keys[t * E_per_block + e_local] * shared_kv[e_local * M + m];
         atomicAdd(
             &shared_results[m],
             res
@@ -381,7 +381,7 @@ __global__ void causal_dot_backward_value_kernel(
         }
     }
     __syncthreads();
-    kv[n][h][e][m] = shared_kv[e_local*M + m];
+    kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
 
@@ -404,12 +404,12 @@ void causal_dot_backward(
     auto kv_backward = torch::zeros({N, H, E, M}, queries.options());
 
     const int threads = 1024;
-    int MUL_PER_BLOCK = min(threads, E*M);
+    int MUL_PER_BLOCK = min(threads, E * M);
     // make sure that MUL_PER_BLOCK is divisible by M;
     MUL_PER_BLOCK = int(MUL_PER_BLOCK / E) *  E;
-    const int blocks_per_sequence = ((E*M) + MUL_PER_BLOCK -1) / MUL_PER_BLOCK;
+    const int blocks_per_sequence = ((E * M) + MUL_PER_BLOCK - 1) / MUL_PER_BLOCK;
     const int M_per_block = MUL_PER_BLOCK / E;
-    int blocks  = N*H*blocks_per_sequence;
+    int blocks  = N * H * blocks_per_sequence;
 
     // Forward memory
     // keys: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
@@ -417,11 +417,11 @@ void causal_dot_backward(
     // queries: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
     // Total memory
     // 2*((E + 2*M_per_block)*T + (E+1)*M_per_block)
-    int shared_mem_const = 2*E*(1+M_per_block);
-    int shared_mem_per_time = 2*(E + 2*M_per_block);
+    int shared_mem_const = 2 * E * (1+M_per_block);
+    int shared_mem_per_time = 2 * (E + 2 * M_per_block);
     int T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
-    const int shared_mem_qk_backward = ((T*shared_mem_per_time) + shared_mem_const) * sizeof(float);
-    for (int l_offset=0; l_offset < L; l_offset += T) {
+    const int shared_mem_qk_backward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
+    for (int l_offset = 0; l_offset < L; l_offset += T) {
         causal_dot_backward_query_key_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_qk_backward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -436,15 +436,15 @@ void causal_dot_backward(
         );
     }
 
-    int MPB = min(threads, E*M);
+    int MPB = min(threads, E * M);
     // make sure that MUL_PER_BLOCK is divisible by M;
     MPB = int(MPB / M) *  M;
-    const int blocks_per_sequence_value = ((E*M) + MPB - 1)/ MPB;
+    const int blocks_per_sequence_value = ((E * M) + MPB - 1)/ MPB;
     const int E_per_block = MPB / M;
-    const int blocks_value  = N*H*blocks_per_sequence_value;
+    const int blocks_value  = N * H * blocks_per_sequence_value;
 
-    shared_mem_const = (E_per_block + 1)*M;
-    shared_mem_per_time = (M + 2*E_per_block);
+    shared_mem_const = (E_per_block + 1) * M;
+    shared_mem_per_time = (M + 2 * E_per_block);
     T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
     const int shared_mem_v_backward = ((T*shared_mem_per_time) + shared_mem_const) * sizeof(float);
     kv.zero_();
