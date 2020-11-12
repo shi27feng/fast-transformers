@@ -94,8 +94,8 @@ __global__ void causal_dot_product_kernel(
             shared_queries[i] = queries[n][h][t][d];
         }
     }
-
     __syncthreads();
+    
     if ((n >= N) || (e >= E)) {
         return;
     }
@@ -105,12 +105,14 @@ __global__ void causal_dot_product_kernel(
         int l = t + l_offset;
         shared_kv[e_local * M + m] += shared_keys[t * E_per_block + e_local] * shared_values[t * M + m];
         __syncthreads();
+
         float res = shared_queries[t * E_per_block + e_local] * shared_kv[e_local * M + m];
         atomicAdd(
             &shared_results[m],
             res
         );
         __syncthreads();
+
         if (threadIdx.x < M) {
             float r1 = shared_results[threadIdx.x];
             atomicAdd(
@@ -121,6 +123,7 @@ __global__ void causal_dot_product_kernel(
         }
     }
     __syncthreads();
+
     kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
