@@ -6,6 +6,11 @@
 
 #include <torch/extension.h>
 
+/*
+ queries: (N: batch_size, L: max_num_queries, H: num_heads, E)
+ keys:    (N, S: max_num_keys, H, E)
+ values:  (N, S, H, M)
+ */
 typedef torch::PackedTensorAccessor32<float, 4, torch::RestrictPtrTraits> float_accessor;
 
 __device__ void get_result(
@@ -21,8 +26,10 @@ __device__ void get_result(
     const int L
 ) {
     for (int l = 0; l < L; l++) {
+        // S \leftarrow S + \phi(K_i) V_i^{T}
         kv[n][h][e][m] += keys[n][h][l][e] * values[n][h][l][m];
         __syncthreads();
+        // broadcast along l-dimension
         float res = queries[n][h][l][e] * kv[n][h][e][m];
         atomicAdd(
             &result[n][h][l][m],
@@ -87,10 +94,12 @@ __global__ void causal_dot_product_kernel(
             shared_queries[i] = queries[n][h][t][d];
         }
     }
+
     __syncthreads();
     if ((n >= N) || (e >= E)) {
         return;
     }
+
     shared_kv[threadIdx.x] = kv[n][h][e][m];
     for (int t = 0; t < t_end; t++) {
         int l = t + l_offset;
@@ -121,15 +130,15 @@ void causal_dot_product(
     const torch::Tensor values,
     torch::Tensor product
 ) {
-    int N = queries.size(0);
-    int H = queries.size(1);
-    int L = queries.size(2);
-    int E = queries.size(3);
-    int M = values.size(3);
+    int N = queries.size(0);   // number of batches
+    int H = queries.size(1);   // number of heads
+    int L = queries.size(2);   // number of queries
+    int E = queries.size(3);   // query/key dimension
+    int M = values.size(3);    // value dimension
 
     auto kv = torch::zeros({N, H, E, M}, queries.options());
 
-    int threads = 1024;
+    int threads = 1024; // threads per block
 
     // Shared mem max size is 48KB
     int MUL_PER_BLOCK = min(threads, E * M);
@@ -139,14 +148,14 @@ void causal_dot_product(
     const int blocks_per_sequence = ((E * M) + threads -1) / threads;
 
     const int E_per_block = MUL_PER_BLOCK / M;
-    int blocks  = N*H*blocks_per_sequence;
+    int blocks  = N * H * blocks_per_sequence;
     int shared_mem_const = (E_per_block + 1) * M;
     int shared_mem_per_time = (M + 2 * E_per_block);
     const int T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
     const int shared_mem_forward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
 
-    for (int l_offset=0; l_offset < L; l_offset += T) {
-     causal_dot_product_kernel
+    for (int l_offset = 0; l_offset < L; l_offset += T) {
+        causal_dot_product_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_forward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
