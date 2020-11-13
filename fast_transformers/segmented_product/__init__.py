@@ -6,31 +6,32 @@
 
 import torch
 
-from .segmented_product_cpu import segmented_dot_product as segmented_dot_product_cpu, \
+
+from .sgm_prod_cpu import sgm_dot_prod as sgm_dot_prod_cpu, \
     segmented_dot_backward as segmented_dot_backward_cpu
 
 try:
-    from .segmented_product_cuda import \
-        segmented_dot_product as segmented_dot_product_cuda, \
-        segmented_dot_backward as segmented_dot_backward_cuda
+    from .sgm_prod_cuda import \
+        sgm_dot_prod as sgm_dot_prod_cuda, \
+        sgm_dot_backward as sgm_dot_backward_cuda
 except ImportError:
-    segmented_dot_product_cuda = segmented_dot_backward_cuda = None
+    sgm_dot_prod_cuda = sgm_dot_backward_cuda = None
 
 
 class SegmentedDotProduct(torch.autograd.Function):
     """Compute the weighted sum of values but attending only to previous
     values."""
     dot = {
-        "cpu": segmented_dot_product_cpu,
-        "cuda": segmented_dot_product_cuda
+        "cpu": sgm_dot_prod_cpu,
+        "cuda": sgm_dot_prod_cuda
     }
     dot_backward = {
-        "cpu": segmented_dot_backward_cpu,
-        "cuda": segmented_dot_backward_cuda
+        "cpu": sgm_dot_backward_cpu,
+        "cuda": sgm_dot_backward_cuda
     }
 
     @staticmethod
-    def forward(ctx, Q, K, V):
+    def forward(ctx, Q, K, V, segments=None):
         # Save the inputs for the gradient computation
         ctx.save_for_backward(Q, K, V)
 
@@ -38,6 +39,7 @@ class SegmentedDotProduct(torch.autograd.Function):
         device = Q.device
         N, H, L, _ = Q.shape
         _, _, _, M = V.shape
+        
         product = torch.zeros((N, H, L, M), device=device)
 
         # Actually perform the dot product
@@ -45,13 +47,14 @@ class SegmentedDotProduct(torch.autograd.Function):
             Q.data,
             K.data,
             V.data,
-            product
+            product,
+            segments   # segment vector
         )
 
         return product
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(ctx, grad_out, segments=None):
         # Extract the saved tensors
         Q, K, V = ctx.saved_tensors
 

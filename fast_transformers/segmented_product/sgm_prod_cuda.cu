@@ -38,8 +38,7 @@ __device__ void get_result(
     }
 }
 
-
-__global__ void segmented_dot_product_kernel(
+__global__ void sgm_dot_prod_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -127,7 +126,7 @@ __global__ void segmented_dot_product_kernel(
     kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
-void segmented_dot_product(
+void sgm_dot_prod(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -185,7 +184,7 @@ void segmented_dot_product(
 // Backward
 // queries: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
 // Total memory:
-__global__ void segmented_dot_backward_query_key_kernel(
+__global__ void sgm_dot_backward_query_key_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -306,7 +305,7 @@ __global__ void segmented_dot_backward_query_key_kernel(
 }
 
 
-__global__ void segmented_dot_backward_value_kernel(
+__global__ void sgm_dot_backward_value_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -397,7 +396,7 @@ __global__ void segmented_dot_backward_value_kernel(
 }
 
 
-void segmented_dot_backward(
+void sgm_dot_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -478,14 +477,14 @@ void segmented_dot_backward(
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "segmented_dot_product",
-        &segmented_dot_product,
+        "sgm_dot_prod",
+        &sgm_dot_prod,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "segmented_dot_backward",
-        &segmented_dot_backward,
+        "sgm_dot_backward",
+        &sgm_dot_backward,
         "Compute the gradients for the segmented dot product."
     );
 }

@@ -6,7 +6,6 @@
 
 #include <torch/extension.h>
 
-
 /**
  * Compute a*b^T and save it into out.
  *
@@ -24,7 +23,6 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
         a++;
     }
 }
-
 
 /**
  * Implement a vector matrix product v*m and save it into out.
@@ -50,7 +48,6 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
-
 /**
  * Implement a vector transposed-matrix product and save it into out.
  *
@@ -72,14 +69,13 @@ inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
-
 /**
  * Compute the segmented products of queries, keys and values.
  *
  * Basically compute V_j' = (Q_{0:j} * K_{0:j}^T) * V_{0:j} for all j. The
  * computation is done efficiently by changing the order of the dot products.
  */
-void segmented_dot_product(
+void sgm_dot_prod(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -123,14 +119,13 @@ void segmented_dot_product(
     }
 }
 
-
 /**
  * Compute the gradients of queries, keys and values given the gradient of the
  * segmented_dot_product output.
  *
  * Make sure that everything is computed in O(N D^2) complexity.
  */
-void segmented_dot_backward(
+void sgm_dot_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -208,18 +203,17 @@ void segmented_dot_backward(
     }
 }
 
-
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "segmented_dot_product",
-        &segmented_dot_product,
+        "sgm_dot_prod",
+        &sgm_dot_prod,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "segmented_dot_backward",
-        &segmented_dot_backward,
+        "sgm_dot_backward",
+        &sgm_dot_backward,
         "Compute the gradient of queries, keys and values given the gradient "
-        "of segmented_dot_product."
+        "of sgm_dot_prod."
     );
 }
