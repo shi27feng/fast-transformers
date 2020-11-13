@@ -130,6 +130,7 @@ void sgm_dot_prod(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
+    const torch::Tensor segments,
     torch::Tensor product
 ) {
     int N = queries.size(0);   // number of batches
@@ -403,6 +404,7 @@ void sgm_dot_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
+    const torch::Tensor segments,
     const torch::Tensor grad_out,
     torch::Tensor grad_queries,
     torch::Tensor grad_keys,

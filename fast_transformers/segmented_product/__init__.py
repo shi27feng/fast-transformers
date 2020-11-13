@@ -30,7 +30,7 @@ class SegmentedDotProduct(torch.autograd.Function):
     }
 
     @staticmethod
-    def forward(ctx, Q, K, V, segments=None):
+    def forward(ctx, Q, K, V, segments):
         # Save the inputs for the gradient computation
         ctx.save_for_backward(Q, K, V)
 
@@ -46,14 +46,14 @@ class SegmentedDotProduct(torch.autograd.Function):
             Q.data,
             K.data,
             V.data,
-            product,
-            segments  # segment vector
+            segments,  # segment vector
+            product
         )
 
         return product
 
     @staticmethod
-    def backward(ctx, grad_out, segments=None):
+    def backward(ctx, grad_out, segments):
         # Extract the saved tensors
         Q, K, V = ctx.saved_tensors
 
@@ -67,6 +67,7 @@ class SegmentedDotProduct(torch.autograd.Function):
             Q.data,
             K.data,
             V.data,
+            segments,
             grad_out,
             grad_Q,
             grad_K,
