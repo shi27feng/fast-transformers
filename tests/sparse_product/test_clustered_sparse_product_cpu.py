@@ -20,12 +20,12 @@ from fast_transformers.sparse_product import clustered_sparse_dot_product
 
 def cluster_queries(Q, query_lengths, C, I, B):
     N, H, L, E = Q.shape
-    planes = Q.new_empty((B, E+1))
+    planes = Q.new_empty((B, E + 1))
     normal_(planes)
     planes[:, -1] = 0
-    hashes = compute_hashes(Q.view(N*H*L, E), planes).view(N, H, L)
+    hashes = compute_hashes(Q.view(N * H * L, E), planes).view(N, H, L)
     # Cluster the hashes and return the cluster index per query
-    groups, counts =  cluster(
+    groups, counts = cluster(
         hashes,
         query_lengths,
         clusters=C,
@@ -56,7 +56,7 @@ class TestSparseProductCPU(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -79,7 +79,7 @@ class TestSparseProductCPU(unittest.TestCase):
         self.assertLess(
             torch.max(torch.abs(
                 products_2 - products
-                )
+            )
             ),
             1e-4
         )
@@ -100,7 +100,7 @@ class TestSparseProductCPU(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -120,7 +120,7 @@ class TestSparseProductCPU(unittest.TestCase):
             )
         e = time.time()
         t_sc = (e - s) / n_runs
-           
+
         topk_broadcast = broadcast(
             topk.float(),
             groups,
@@ -137,7 +137,7 @@ class TestSparseProductCPU(unittest.TestCase):
             )
         e = time.time()
         t_s = (e - s) / n_runs
-        
+
         s = time.time()
         for i in range(n_runs):
             torch.einsum("nhle,nhse->nhls", Q, K)

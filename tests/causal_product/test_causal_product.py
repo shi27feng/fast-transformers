@@ -57,7 +57,7 @@ class TestCausalProduct(unittest.TestCase):
             )
             for g1, g2 in zip(grad, grad_hat):
                 self.assertLess(
-                    torch.abs(g1-g2).max(),
+                    torch.abs(g1 - g2).max(),
                     5e-4
                 )
 

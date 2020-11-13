@@ -17,6 +17,7 @@ class MockEvent(Event):
 class TestEventDispatcher(unittest.TestCase):
     def test_simple_listen_dispatch(self):
         d = {"x": 0}
+
         def listener1(event):
             d["x"] += 1
 
@@ -35,6 +36,7 @@ class TestEventDispatcher(unittest.TestCase):
 
         def set_payload(event):
             d.update(event.payload)
+
         ed.listen(MockEvent, set_payload)
         ed.dispatch(Event(None))
         self.assertTrue("y" not in d)
@@ -55,7 +57,6 @@ class TestEventDispatcher(unittest.TestCase):
         ed1 = EventDispatcher()
         ed2 = EventDispatcher.get(ed1)
         self.assertTrue(ed1 is ed2)
-
 
 
 if __name__ == "__main__":

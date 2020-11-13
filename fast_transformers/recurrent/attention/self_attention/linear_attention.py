@@ -34,6 +34,7 @@ class RecurrentLinearAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, query_dimensions, feature_map=None, eps=1e-6,
                  event_dispatcher=""):
         super(RecurrentLinearAttention, self).__init__()

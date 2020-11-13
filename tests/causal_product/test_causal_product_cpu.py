@@ -17,7 +17,7 @@ from fast_transformers.causal_product.causal_product_cpu import \
 
 
 def max_relative_error(a, b, eps=1e-6):
-    return torch.abs((a-b) / (torch.abs(a) + eps)).max().item()
+    return torch.abs((a - b) / (torch.abs(a) + eps)).max().item()
 
 
 class TestCausalProductCPU(unittest.TestCase):
@@ -95,7 +95,7 @@ class TestCausalProductCPU(unittest.TestCase):
         end = time.time()
         print("[{}] CPU time taken: {} (ms)".format(
             CP,
-            (end-start)*1000
+            (end - start) * 1000
         ))
 
     def _test_benchmark_backward(self, CP):
@@ -121,7 +121,7 @@ class TestCausalProductCPU(unittest.TestCase):
         end = time.time()
         print("[{}] CPU time taken: {} (ms)".format(
             CP,
-            (end-start)*1000
+            (end - start) * 1000
         ))
 
     def test_result_forward(self):

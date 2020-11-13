@@ -42,6 +42,7 @@ class LinearAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, query_dimensions, feature_map=None, eps=1e-6,
                  event_dispatcher=""):
         super(LinearAttention, self).__init__()
@@ -72,7 +73,7 @@ class LinearAttention(Module):
         KV = torch.einsum("nshd,nshm->nhmd", K, values)
 
         # Compute the normalizer
-        Z = 1/(torch.einsum("nlhd,nhd->nlh", Q, K.sum(dim=1))+self.eps)
+        Z = 1 / (torch.einsum("nlhd,nhd->nlh", Q, K.sum(dim=1)) + self.eps)
 
         # Finally compute and return the new values
         V = torch.einsum("nlhd,nhmd,nlh->nlhm", Q, KV, Z)

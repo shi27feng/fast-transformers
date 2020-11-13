@@ -33,6 +33,7 @@ class ExactTopKAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, topk=32, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
         super(ExactTopKAttention, self).__init__()
@@ -46,18 +47,18 @@ class ExactTopKAttention(Module):
         # Extract some shapes and compute the temperature
         N, L, H, E = queries.shape
         _, S, _, D = values.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
 
         # Compute the unnormalized attention and apply the masks
         QK = torch.einsum("nlhe,nshe->nhls", queries, keys)
         topk = min(self.topk, L)
-        
+
         if not attn_mask.all_ones:
             QK = QK + attn_mask.additive_matrix
         QK = QK + key_lengths.additive_matrix[:, None, None]
 
         topk_values, topk_idx = torch.topk(QK, topk, sorted=False, dim=-1)
-        mask = QK.new_ones(QK.shape) *  float("-inf") 
+        mask = QK.new_ones(QK.shape) * float("-inf")
         mask[
             torch.arange(N, device=QK.device).view(N, 1, 1, 1),
             torch.arange(H, device=QK.device).view(1, H, 1, 1),
@@ -65,7 +66,7 @@ class ExactTopKAttention(Module):
             topk_idx,
         ] = 0.
 
-        QK = QK + mask 
+        QK = QK + mask
 
         # Compute the attention and the weighted average
         A = self.dropout(torch.softmax(softmax_temp * QK, dim=-1))

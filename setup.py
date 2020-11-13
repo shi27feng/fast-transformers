@@ -75,14 +75,14 @@ def get_extensions():
         CppExtension(
             "fast_transformers.aggregate.aggregate_cpu",
             sources=[
-               "fast_transformers/aggregate/aggregate_cpu.cpp" 
+                "fast_transformers/aggregate/aggregate_cpu.cpp"
             ],
             extra_compile_args=extra_compile_args
         ),
         CppExtension(
             "fast_transformers.clustering.hamming.cluster_cpu",
             sources=[
-               "fast_transformers/clustering/hamming/cluster_cpu.cpp"
+                "fast_transformers/clustering/hamming/cluster_cpu.cpp"
             ],
             extra_compile_args=extra_compile_args
         ),

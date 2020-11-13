@@ -32,6 +32,7 @@ class RecurrentFullAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
         super(RecurrentFullAttention, self).__init__()
@@ -46,7 +47,7 @@ class RecurrentFullAttention(Module):
         # Extract some shapes and compute the temperature
         N, H, E = query.shape
         _, _, D = value.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
 
         # Aggregate the list of keys and values
         if state is not None:

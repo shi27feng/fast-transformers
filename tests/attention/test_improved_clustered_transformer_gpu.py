@@ -122,13 +122,14 @@ class TestTransformerEncoder(unittest.TestCase):
         y_full = improved_transformer(x, length_mask=length_mask)
         y_improved = full_transformer(x, length_mask=length_mask)
         self.assertLess(
-            torch.max(torch.abs(y_improved[1,:5] - y_full[1,:5])),
+            torch.max(torch.abs(y_improved[1, :5] - y_full[1, :5])),
             1e-4
         )
         self.assertLess(
-            torch.max(torch.abs(y_improved[10,:10] - y_full[10,:10])),
+            torch.max(torch.abs(y_improved[10, :10] - y_full[10, :10])),
             1e-4
         )
+
 
 if __name__ == "__main__":
     unittest.main()

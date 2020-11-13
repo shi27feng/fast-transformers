@@ -36,6 +36,7 @@ class LocalAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, local_context, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
         super(LocalAttention, self).__init__()
@@ -67,7 +68,7 @@ class LocalAttention(Module):
         N, L, H, E = queries.shape
         _, S, _, D = values.shape
         context = self.local_context
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
 
         # Permute the dimensions to NHLE instead of NLHE
         queries = queries.permute(0, 2, 1, 3).contiguous()

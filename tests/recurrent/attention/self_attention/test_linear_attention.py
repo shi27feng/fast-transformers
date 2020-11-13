@@ -76,7 +76,7 @@ class TestRecurrentLinearAttention(unittest.TestCase):
             v2i, memory = rec_att(q[:, i], k[:, i], v[:, i], memory)
             v2.append(v2i)
         v2 = torch.stack(v2, dim=1)
-        self.assertLess(torch.abs(v1-v2).max(), 1e-5)
+        self.assertLess(torch.abs(v1 - v2).max(), 1e-5)
 
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
     def test_benchmark_cpu(self):
@@ -96,7 +96,7 @@ class TestRecurrentLinearAttention(unittest.TestCase):
         for i in range(100):
             v, memory = att(q, k, v, memory)
         end = time.time()
-        print("CPU Time taken:", (end-start)*1000, "(ms)")
+        print("CPU Time taken:", (end - start) * 1000, "(ms)")
 
     @unittest.skipUnless(torch.cuda.is_available(), "no CUDA capable device")
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
@@ -125,4 +125,3 @@ class TestRecurrentLinearAttention(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

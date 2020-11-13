@@ -7,6 +7,7 @@
 class Registry(object):
     """Hold the available attention implementations and their required
     parameters."""
+
     def __init__(self):
         self._classes = {}
         self._class_params = {}
@@ -21,15 +22,15 @@ class Registry(object):
         # register the parameters
         for parameter, spec in parameter_tuples:
             if (
-                parameter in self._parameters and
-                self._parameters[parameter] != spec
+                    parameter in self._parameters and
+                    self._parameters[parameter] != spec
             ):
                 raise ValueError(("{} is already registered with "
                                   "spec {!r} instead of {!r}").format(
-                                  parameter,
-                                  self._parameters[parameter],
-                                  spec
-                                ))
+                    parameter,
+                    self._parameters[parameter],
+                    spec
+                ))
             self._parameters[parameter] = spec
 
         # note which parameters are needed by this class

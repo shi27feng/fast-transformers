@@ -15,6 +15,7 @@ from ....attention_registry import RecurrentCrossAttentionRegistry, Optional, \
     Float, EventDispatcherInstance
 from ....events import EventDispatcher
 
+
 class RecurrentCrossFullAttention(Module):
     """Implement autoregressive softmax cross attention as a recurrent
     module.
@@ -30,6 +31,7 @@ class RecurrentCrossFullAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
         super(RecurrentCrossFullAttention, self).__init__()
@@ -40,7 +42,7 @@ class RecurrentCrossFullAttention(Module):
     def forward(self, query, keys, values, key_lengths, state=None):
         # Extract some shapes and compute the temperature
         N, H, E = query.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
 
         # Extract the keys and values either from the arguments or the state
         if state is not None:

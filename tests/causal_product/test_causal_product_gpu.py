@@ -22,7 +22,7 @@ except ImportError:
 
 
 def max_relative_error(a, b, eps=1e-6):
-    return torch.abs((a-b) / (torch.abs(a) + eps)).max().item()
+    return torch.abs((a - b) / (torch.abs(a) + eps)).max().item()
 
 
 class TestCausalProductCUDA(unittest.TestCase):
@@ -165,4 +165,3 @@ class TestCausalProductCUDA(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

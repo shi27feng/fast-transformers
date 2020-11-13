@@ -12,6 +12,7 @@ from .sparse_product_cpu import \
     sparse_dot_backward as sparse_dot_backward_cpu, \
     sparse_weighted_average as sparse_weighted_average_cpu, \
     sparse_weighted_average_backward as sparse_weighted_average_backward_cpu
+
 try:
     from .sparse_product_cuda import \
         sparse_dot_product as sparse_dot_product_cuda, \
@@ -182,11 +183,11 @@ class ClusteredSparseDotProduct(torch.autograd.Function):
             )
 
         else:
-            queries_per_block = min(L, 1024//k) 
+            queries_per_block = min(L, 1024 // k)
             threads = k * queries_per_block
-            blocks = ((L*k)//threads) + C + 1
-            query_map = torch.ones((N, H, blocks), dtype=torch.int32).cuda() * L 
-            blocks_map = torch.ones((N, H, blocks), dtype=torch.int32).cuda() * -1 
+            blocks = ((L * k) // threads) + C + 1
+            query_map = torch.ones((N, H, blocks), dtype=torch.int32).cuda() * L
+            blocks_map = torch.ones((N, H, blocks), dtype=torch.int32).cuda() * -1
             _, sorted_group_indices = torch.sort(groups, descending=True, dim=-1)
 
             # Actually perform the dot product
@@ -221,6 +222,7 @@ class ClusteredSparseDotProduct(torch.autograd.Function):
 
         return grad_Q, grad_K, None, None, None, None
 
+
 class ClusteredSparseWeightedAverage(torch.autograd.Function):
     """Compute the weighted average only for the topk values."""
     avg = {
@@ -241,7 +243,7 @@ class ClusteredSparseWeightedAverage(torch.autograd.Function):
         N, H, L, _ = weights.shape
         _, _, _, E = values.shape
         output = values.new_zeros(N, H, L, E)
-        
+
         # Compute the average
         ClusteredSparseWeightedAverage.avg[weights.device.type](
             weights,

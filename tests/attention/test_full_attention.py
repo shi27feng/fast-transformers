@@ -46,7 +46,7 @@ class TestFullAttention(unittest.TestCase):
         for i in range(10):
             v_new = att(q, k, v, m1, m2, m3)
         end = time.time()
-        print("CPU Time taken:", (end-start)*1000, "(ms)")
+        print("CPU Time taken:", (end - start) * 1000, "(ms)")
 
     @unittest.skipUnless(torch.cuda.is_available(), "no CUDA capable device")
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")

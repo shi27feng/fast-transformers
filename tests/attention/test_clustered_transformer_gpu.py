@@ -27,7 +27,7 @@ class TestTransformerEncoder(unittest.TestCase):
             TransformerEncoderLayer(
                 AttentionLayer(
                     ClusteredAttention(
-                        clusters = 10
+                        clusters=10
                     ),
                     d_model,
                     n_heads
@@ -37,7 +37,7 @@ class TestTransformerEncoder(unittest.TestCase):
             )
             for i in range(6)
         ])
-        
+
         transformer = transformer.to("cuda")
         x = torch.rand(100, 20, d_model).to("cuda")
         y = transformer(x)

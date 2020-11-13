@@ -46,13 +46,13 @@ from ..attention import \
     ReformerAttention, \
     ExactTopKAttention, ImprovedClusteredCausalAttention, \
     ConditionalFullAttention
+
 del FullAttention, \
     LinearAttention, CausalLinearAttention, \
     ClusteredAttention, ImprovedClusteredAttention, \
     ReformerAttention, \
     ExactTopKAttention, ImprovedClusteredCausalAttention, \
     ConditionalFullAttention
-
 
 from .attention_builders import \
     AttentionBuilder, \

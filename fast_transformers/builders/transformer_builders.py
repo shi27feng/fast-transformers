@@ -28,6 +28,7 @@ class BaseTransformerBuilder(BaseBuilder):
     Classes extending the BaseTransformerBuilder should implement the `get()`
     method that actually builds the transformer.
     """
+
     def __init__(self):
         # transformer parameters
         self._n_layers = 4
@@ -149,6 +150,7 @@ class BaseTransformerEncoderBuilder(BaseTransformerBuilder):
     - _get_encoder_class()
     - _get_encoder_layer_class()
     """
+
     def __init__(self):
         super(BaseTransformerEncoderBuilder, self).__init__()
         self._attention_builder = self._get_attention_builder()
@@ -217,7 +219,7 @@ class BaseTransformerEncoderBuilder(BaseTransformerBuilder):
         EncoderLayer = self._get_encoder_layer_class()
         Attention = self._get_attention_layer_class()
 
-        model_dimensions = self.value_dimensions*self.n_heads
+        model_dimensions = self.value_dimensions * self.n_heads
         return Encoder(
             [
                 EncoderLayer(
@@ -259,6 +261,7 @@ class TransformerEncoderBuilder(BaseTransformerEncoderBuilder):
         builder.attention_type = "linear"
         transformer = builder.get()
     """
+
     def _get_attention_builder(self):
         """Return an instance of the appropriate attention builder."""
         return AttentionBuilder()
@@ -293,6 +296,7 @@ class RecurrentEncoderBuilder(BaseTransformerEncoderBuilder):
         builder.attention_type = "linear"
         transformer = builder.get()
     """
+
     def _get_attention_builder(self):
         """Return an attention builder for recurrent attention."""
         return RecurrentAttentionBuilder()
@@ -322,6 +326,7 @@ class BaseTransformerDecoderBuilder(BaseTransformerBuilder):
     - _get_decoder_class()
     - _get_decoder_layer_class()
     """
+
     def __init__(self):
         super(BaseTransformerDecoderBuilder, self).__init__()
         self._self_attention_builder = self._get_self_attention_builder()
@@ -423,7 +428,7 @@ class BaseTransformerDecoderBuilder(BaseTransformerBuilder):
         SelfAttention = self._get_self_attention_layer_class()
         CrossAttention = self._get_cross_attention_layer_class()
 
-        model_dimensions = self.value_dimensions*self.n_heads
+        model_dimensions = self.value_dimensions * self.n_heads
         return Decoder(
             [
                 DecoderLayer(
@@ -474,6 +479,7 @@ class TransformerDecoderBuilder(BaseTransformerDecoderBuilder):
         builder.cross_attention_type = "full"
         transformer = builder.get()
     """
+
     def _get_self_attention_builder(self):
         """Return an attention builder for creating non-recurrent attention
         variants."""
@@ -521,6 +527,7 @@ class RecurrentDecoderBuilder(BaseTransformerDecoderBuilder):
         builder.cross_attention_type = "full"
         transformer = builder.get()
     """
+
     def _get_self_attention_builder(self):
         """Return an attention builder for creating non-recurrent attention
         variants."""

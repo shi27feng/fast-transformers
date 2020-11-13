@@ -21,6 +21,7 @@ class TestAttention:
         self.n_heads = n_heads
         self.query_dimensions = query_dimensions
 
+
 AttentionRegistry.register(
     "test-attention", TestAttention,
     [

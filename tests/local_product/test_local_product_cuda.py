@@ -54,12 +54,12 @@ class TestLocalProductCUDA(unittest.TestCase):
             QK = torch.full((N, H, L, local_context), -1e24,
                             dtype=torch.float32).cuda()
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
-                QK[:, :, i, kstart:kstart+(end-start)] = torch.einsum(
+                kstart = local_context // 2 - abs(i - start)
+                QK[:, :, i, kstart:kstart + (end - start)] = torch.einsum(
                     "nhe,nhle->nhl",
                     Q[:, :, i],
                     K[:, :, start:end]
@@ -130,19 +130,19 @@ class TestLocalProductCUDA(unittest.TestCase):
             lengths = torch.full((N,), L, dtype=torch.long).cuda()
             grad_in = torch.ones(N, H, L, local_context).cuda()
             GQ, GK = self.kernels[CP]["dot_backward"](Q, K, lengths, grad_in,
-                                                        local_context)
+                                                      local_context)
 
             Q = Q.requires_grad_(True)
             K = K.requires_grad_(True)
             QK = torch.full((N, H, L, local_context), -1e24,
                             dtype=torch.float32)
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
-                QK[:, :, i, kstart:kstart+(end-start)] = torch.einsum(
+                kstart = local_context // 2 - abs(i - start)
+                QK[:, :, i, kstart:kstart + (end - start)] = torch.einsum(
                     "nhe,nhle->nhl",
                     Q[:, :, i],
                     K[:, :, start:end]
@@ -172,7 +172,7 @@ class TestLocalProductCUDA(unittest.TestCase):
         # warmup the cache
         for i in range(10):
             GQ, GK = self.kernels[CP]["dot_backward"](Q, K, lengths, grad_in,
-                                                        local_context)
+                                                      local_context)
 
         # measure
         start = torch.cuda.Event(enable_timing=True)
@@ -180,7 +180,7 @@ class TestLocalProductCUDA(unittest.TestCase):
         start.record()
         for i in range(10):
             GQ, GK = self.kernels[CP]["dot_backward"](Q, K, lengths, grad_in,
-                                                        local_context)
+                                                      local_context)
         end.record()
         torch.cuda.synchronize()
         print("[dot_backward] [{}] GPU time taken: {} (ms)".format(
@@ -207,14 +207,14 @@ class TestLocalProductCUDA(unittest.TestCase):
 
             out = torch.zeros(N, H, L, E).cuda()
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
+                kstart = local_context // 2 - abs(i - start)
                 out[:, :, i] = torch.einsum(
                     "nhl,nhle->nhe",
-                    A[:, :, i, kstart:kstart+end-start],
+                    A[:, :, i, kstart:kstart + end - start],
                     V[:, :, start:end]
                 )
 
@@ -275,14 +275,14 @@ class TestLocalProductCUDA(unittest.TestCase):
             V = V.requires_grad_(True)
             out = torch.zeros(N, H, L, E).cuda()
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
+                kstart = local_context // 2 - abs(i - start)
                 out[:, :, i] = torch.einsum(
                     "nhl,nhle->nhe",
-                    A[:, :, i, kstart:kstart+end-start],
+                    A[:, :, i, kstart:kstart + end - start],
                     V[:, :, start:end]
                 )
             out.sum().backward()

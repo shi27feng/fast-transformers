@@ -33,6 +33,7 @@ class FullAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
         super(FullAttention, self).__init__()
@@ -59,7 +60,7 @@ class FullAttention(Module):
         # Extract some shapes and compute the temperature
         N, L, H, E = queries.shape
         _, S, _, D = values.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
 
         # Compute the unnormalized attention and apply the masks
         QK = torch.einsum("nlhe,nshe->nhls", queries, keys)

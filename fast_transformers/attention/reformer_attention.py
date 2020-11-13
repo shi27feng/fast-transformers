@@ -62,8 +62,8 @@ class ReformerAttention(Module):
 
         return torch.cat([
             x.new_zeros((xshape[0], 1) + xshape[2:]),
-            torch.repeat_interleave(x, 2, dim=1)[:,:-1]
-        ], dim=1).view(xshape[0], xshape[1], 2*xshape[2], *xshape[3:])
+            torch.repeat_interleave(x, 2, dim=1)[:, :-1]
+        ], dim=1).view(xshape[0], xshape[1], 2 * xshape[2], *xshape[3:])
 
     def _reformer_round(self, Q, K, V, mask, softmax_temp):
         # Hash the queries
@@ -118,7 +118,7 @@ class ReformerAttention(Module):
         # Values
         V_grouped = self._look_back(V_grouped)
         V_new = torch.einsum("nbhls,nbshe->nblhe", A, V_grouped)
-        V_new = V_new.contiguous().view(N, -1,  H, E)
+        V_new = V_new.contiguous().view(N, -1, H, E)
         V_new = V_new[batch_indices, invert_group, head_indices]
         V_new = V_new.contiguous().view(N, L, H, E)
         return V_new
@@ -128,12 +128,12 @@ class ReformerAttention(Module):
         # Extract the dimensions of query, key, value
         N, L, H, E = queries.shape
 
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
         # Create the mask
         mask = key_lengths.additive_matrix.unsqueeze(1).expand(N, L, L)
         if self.masked:
-            mask = mask + torch.eye(L, device=queries.device).unsqueeze(0)*float(-1e9)
-       
+            mask = mask + torch.eye(L, device=queries.device).unsqueeze(0) * float(-1e9)
+
         if not attn_mask.all_ones:
             mask = mask + attn_mask.additive_matrix.unsqueeze(0)
         # Get normalized Queries as Keys
@@ -142,7 +142,7 @@ class ReformerAttention(Module):
         K = K * key_lengths.float_matrix.view(N, L, 1, 1)
 
         V_new = 0
-        factor = 1/self.rounds
+        factor = 1 / self.rounds
         for i in range(self.rounds):
             V_new = V_new + \
                     factor * self._reformer_round(queries, K, values, mask, softmax_temp)

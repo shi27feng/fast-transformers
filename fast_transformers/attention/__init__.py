@@ -6,7 +6,6 @@
 
 """Implementations of different types of attention mechanisms."""
 
-
 from .attention_layer import AttentionLayer
 from .full_attention import FullAttention
 from .linear_attention import LinearAttention

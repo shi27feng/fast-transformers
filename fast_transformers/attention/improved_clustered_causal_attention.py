@@ -28,7 +28,7 @@ from ..sparse_product import clustered_sparse_dot_product, \
 class _GroupQueries(torch.autograd.Function):
     @staticmethod
     def forward(ctx, Q, clusters, counts):
-        factors = 1/counts.float()
+        factors = 1 / counts.float()
         q_grouped = aggregate(Q, clusters, factors)
         ctx.save_for_backward(clusters, factors)
 
@@ -96,6 +96,7 @@ class ImprovedClusteredCausalAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, clusters, iterations=10, bits=32,
                  hash_bias=True, topk=32, softmax_temp=None,
                  attention_dropout=0.1, event_dispatcher=""):
@@ -113,14 +114,14 @@ class ImprovedClusteredCausalAttention(Module):
         N, H, L, E = Q.shape
 
         # Compute the hashes for all the queries
-        planes = Q.new_empty((self.bits, E+1))
+        planes = Q.new_empty((self.bits, E + 1))
         normal_(planes)
         if not self.hash_bias:
             planes[:, -1] = 0
-        hashes = compute_hashes(Q.view(N*H*L, E), planes).view(N, H, L)
+        hashes = compute_hashes(Q.view(N * H * L, E), planes).view(N, H, L)
 
         # Cluster the hashes and return the cluster index per query
-        clusters, counts =  cluster(
+        clusters, counts = cluster(
             hashes,
             query_lengths._lengths.int(),
             clusters=self.clusters,
@@ -148,10 +149,10 @@ class ImprovedClusteredCausalAttention(Module):
         )
         # We need to mask the topk dot products if topk > input_length
         QK = QK.masked_fill(
-            torch.isinf(topk_values[:,0,0,:]).view(N, 1, 1, k),
+            torch.isinf(topk_values[:, 0, 0, :]).view(N, 1, 1, k),
             float("-inf")
         )
-        
+
         # We need to mask out the future
         assert topk.is_contiguous()
         topk_broadcast = broadcast(
@@ -183,12 +184,12 @@ class ImprovedClusteredCausalAttention(Module):
         if not attn_mask.lower_triangular:
             raise RuntimeError(("ImprovedClusteredCausalAttention only supports full "
                                 "lower triangular masks"))
-        queries = queries.permute(0,2,1,3).contiguous()
-        keys = keys.permute(0,2,1,3).contiguous()
-        values = values.permute(0,2,1,3).contiguous()
+        queries = queries.permute(0, 2, 1, 3).contiguous()
+        keys = keys.permute(0, 2, 1, 3).contiguous()
+        values = values.permute(0, 2, 1, 3).contiguous()
         N, H, L, E = queries.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
-        
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
+
         # Cluster the queries into groups
         clusters, counts = self._create_query_groups(queries, query_lengths)
         Q_grouped = _GroupQueries.apply(queries, clusters, counts)

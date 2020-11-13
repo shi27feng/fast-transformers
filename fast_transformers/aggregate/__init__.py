@@ -9,6 +9,7 @@ import torch
 
 from .aggregate_cpu import aggregate as aggregate_cpu, \
     broadcast as broadcast_cpu
+
 try:
     from .aggregate_cuda import aggregate as aggregate_gpu, \
         broadcast as broadcast_gpu
@@ -53,7 +54,7 @@ def broadcast(Y, G, F, X=None):
         broadcast_gpu(Y, G, F, X)
 
     return X
-    
+
 
 def clustered_broadcast(Y, groups, counts, lengths, X=None):
     device = Y.device
@@ -69,16 +70,16 @@ def clustered_broadcast(Y, groups, counts, lengths, X=None):
     else:
         N, H, C, E = Y.shape
         _, _, L, E = X.shape
-   
-        queries_per_block = min(L, 1024) 
+
+        queries_per_block = min(L, 1024)
         threads = queries_per_block
-        blocks = (L//threads) + C + 1
+        blocks = (L // threads) + C + 1
         query_map = torch.ones((N, H, blocks),
                                dtype=torch.int32,
-                               device=Y.device) * L 
+                               device=Y.device) * L
         blocks_map = torch.ones_like(query_map,
                                      dtype=torch.int32,
-                                     device=Y.device) * -1 
+                                     device=Y.device) * -1
         _, sorted_group_indices = torch.sort(groups, descending=True, dim=-1)
         factors = torch.ones_like(counts, dtype=Y.dtype)
         clustered_broadcast_gpu(

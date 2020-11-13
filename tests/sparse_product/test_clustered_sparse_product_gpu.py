@@ -17,14 +17,15 @@ from fast_transformers.clustering.hamming import cluster
 from fast_transformers.sparse_product import sparse_dot_product
 from fast_transformers.sparse_product import clustered_sparse_dot_product
 
+
 def cluster_queries(Q, query_lengths, C, I, B):
     N, H, L, E = Q.shape
-    planes = Q.new_empty((B, E+1))
+    planes = Q.new_empty((B, E + 1))
     normal_(planes)
     planes[:, -1] = 0
-    hashes = compute_hashes(Q.view(N*H*L, E), planes).view(N, H, L)
+    hashes = compute_hashes(Q.view(N * H * L, E), planes).view(N, H, L)
     # Cluster the hashes and return the cluster index per query
-    groups, counts =  cluster(
+    groups, counts = cluster(
         hashes,
         query_lengths,
         clusters=C,
@@ -60,7 +61,7 @@ class TestSparseProductCUDA(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -83,7 +84,7 @@ class TestSparseProductCUDA(unittest.TestCase):
         self.assertLess(
             torch.max(torch.abs(
                 products_2 - products
-                )
+            )
             ),
             1e-4
         )
@@ -104,7 +105,7 @@ class TestSparseProductCUDA(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -135,7 +136,7 @@ class TestSparseProductCUDA(unittest.TestCase):
         e.record()
         torch.cuda.synchronize()
         t_sc = s.elapsed_time(e)
-   
+
         topk_broadcast = broadcast(
             topk.float(),
             groups,

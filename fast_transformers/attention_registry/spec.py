@@ -18,6 +18,7 @@ class Spec(object):
                    returns its canonical value or raises ValueError.
         name: A name to create a human readable description of the Spec
     """
+
     def __init__(self, predicate, name="CustomSpec"):
         self._predicate = predicate
         self._name = name
@@ -46,6 +47,7 @@ class Choice(Spec):
     ---------
         choices: A set or list of possible values for this parameter
     """
+
     def __init__(self, choices):
         self._choices = choices
 
@@ -98,6 +100,7 @@ class Optional(Spec):
         spec: The spec for the value if it is not None
         default: The returned value in case it is None
     """
+
     def __init__(self, spec, default=None):
         self._other_spec = spec
         self._default = default
@@ -113,8 +116,8 @@ class Optional(Spec):
     def __eq__(self, x):
         if isinstance(x, Optional):
             return (
-                self._other_spec == x._other_spec and
-                self._default == x._default
+                    self._other_spec == x._other_spec and
+                    self._default == x._default
             )
         return False
 

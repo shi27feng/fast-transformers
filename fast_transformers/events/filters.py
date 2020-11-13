@@ -28,6 +28,7 @@ class EventFilter(object):
             lambda ev: torch.isnan(ev.attention_matrix).any()
         )
     """
+
     def __call__(self, event):
         raise NotImplementedError()
 
@@ -71,6 +72,7 @@ class EventFilter(object):
 
 class CallableEventFilter(EventFilter):
     """Wrap a function with an EventFilter object."""
+
     def __init__(self, event_filter):
         self._event_filter = event_filter
 
@@ -91,6 +93,7 @@ class LayerNameEventFilter(EventFilter):
         root: torch.nn.Module instance that represents the root container
         name_filter: callable, that returns true if the name 
     """
+
     def __init__(self, root, name_filter):
         self._names = {
             weakref.ref(m): n

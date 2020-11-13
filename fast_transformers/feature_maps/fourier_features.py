@@ -31,12 +31,12 @@ def orthogonal_random_matrix_(w):
     rows, columns = w.shape
     start = 0
     while start < columns:
-        end = min(start+rows, columns)
+        end = min(start + rows, columns)
         block = torch.randn(rows, rows, device=w.device)
         norms = torch.sqrt(torch.einsum("ab,ab->a", block, block))
         Q, _ = torch.qr(block)
         w[:, start:end] = (
-            Q[:, :end-start] * norms[None, :end-start]
+                Q[:, :end - start] * norms[None, :end - start]
         )
         start += rows
 
@@ -60,6 +60,7 @@ class RandomFourierFeatures(FeatureMap):
                     orthogonal random features to reduce the approximation
                     variance (default: False)
     """
+
     def __init__(self, query_dimensions, n_dims=None, softmax_temp=None,
                  orthogonal=False):
         super(RandomFourierFeatures, self).__init__(query_dimensions)
@@ -67,14 +68,14 @@ class RandomFourierFeatures(FeatureMap):
         self.n_dims = n_dims or query_dimensions
         self.orthogonal = orthogonal
         self.softmax_temp = (
-            1/sqrt(query_dimensions) if softmax_temp is None
+            1 / sqrt(query_dimensions) if softmax_temp is None
             else softmax_temp
         )
 
         # Make a buffer for storing the sampled omega
         self.register_buffer(
             "omega",
-            torch.zeros(query_dimensions, self.n_dims//2)
+            torch.zeros(query_dimensions, self.n_dims // 2)
         )
 
     def new_feature_map(self):
@@ -87,7 +88,7 @@ class RandomFourierFeatures(FeatureMap):
         x = x * sqrt(self.softmax_temp)
         u = x.unsqueeze(-2).matmul(self.omega).squeeze(-2)
         phi = torch.cat([torch.cos(u), torch.sin(u)], dim=-1)
-        return phi * sqrt(2/self.n_dims)
+        return phi * sqrt(2 / self.n_dims)
 
 
 class SmoothedRandomFourierFeatures(RandomFourierFeatures):
@@ -111,11 +112,12 @@ class SmoothedRandomFourierFeatures(RandomFourierFeatures):
                     variance (default: False)
         smoothing: float, The smoothing parameter to add to the dot product.
     """
+
     def __init__(self, query_dimensions, n_dims=None, softmax_temp=None,
                  orthogonal=False, smoothing=1.0):
         super(SmoothedRandomFourierFeatures, self).__init__(
             query_dimensions,
-            n_dims=query_dimensions-1 if n_dims is None else n_dims-1,
+            n_dims=query_dimensions - 1 if n_dims is None else n_dims - 1,
             softmax_temp=softmax_temp,
             orthogonal=orthogonal,
         )
@@ -155,6 +157,7 @@ class Favor(RandomFourierFeatures):
                    the max is subtracted before the exponentiation.
                    (default: False)
     """
+
     def __init__(self, query_dimensions, n_dims=None, softmax_temp=None,
                  orthogonal=True, stabilize=False):
         super(Favor, self).__init__(query_dimensions, n_dims=n_dims,
@@ -227,11 +230,12 @@ class GeneralizedRandomFeatures(RandomFourierFeatures):
         kernel_fn: callable, defines the f used for the feature map.
                    (default: relu)
     """
+
     def __init__(self, query_dimensions, n_dims=None, softmax_temp=1.0,
                  orthogonal=True, kernel_fn=torch.relu):
         super(GeneralizedRandomFeatures, self).__init__(
             query_dimensions,
-            n_dims=2*query_dimensions if n_dims is None else 2*n_dims,
+            n_dims=2 * query_dimensions if n_dims is None else 2 * n_dims,
             softmax_temp=softmax_temp,
             orthogonal=orthogonal
         )

@@ -24,7 +24,7 @@ class TestAggregateCPU(unittest.TestCase):
 
         x = torch.rand((N, H, L, E))
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int()
-        c = (.1*torch.ones(N, H, C))
+        c = (.1 * torch.ones(N, H, C))
         y = torch.zeros(N, H, C, E)
 
         aggregate_cpu(x, g, c, y)
@@ -45,13 +45,13 @@ class TestAggregateCPU(unittest.TestCase):
 
         y = torch.rand(N, H, C, E)
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int()
-        c = (.1*torch.ones(N, H, C))
+        c = (.1 * torch.ones(N, H, C))
         x = torch.rand((N, H, L, E))
 
         broadcast_cpu(y, g, c, x)
         for i in range(C):
             self.assertTrue(
-                torch.all(x[:, :, i::C] == 0.1*y[:, :, i:i+1, :])
+                torch.all(x[:, :, i::C] == 0.1 * y[:, :, i:i + 1, :])
             )
 
     def test_both(self):
@@ -63,7 +63,7 @@ class TestAggregateCPU(unittest.TestCase):
 
         x_start = torch.rand(N, H, L, E)
         x_end = torch.rand(N, H, L, E)
-        g = (torch.rand(N, H, L)*C).int()
+        g = (torch.rand(N, H, L) * C).int()
         c = torch.zeros(N, H, C)
         y = torch.zeros((N, H, C, E))
 
@@ -78,13 +78,13 @@ class TestAggregateCPU(unittest.TestCase):
             self.assertTrue(torch.all((g == i).sum(2) == c[:, :, i].long()))
 
         # Aggregating into averages twice should be a noop
-        aggregate_cpu(x_start, g, 1/c, y)
+        aggregate_cpu(x_start, g, 1 / c, y)
         broadcast_cpu(y, g, torch.ones(N, H, C), x_start)
         y.zero_()
-        aggregate_cpu(x_start, g, 1/c, y)
+        aggregate_cpu(x_start, g, 1 / c, y)
         broadcast_cpu(y, g, torch.ones(N, H, C), x_end)
         self.assertLess(
-            torch.abs(x_start-x_end).max().item(),
+            torch.abs(x_start - x_end).max().item(),
             1e-6
         )
 
@@ -98,7 +98,7 @@ class TestAggregateCPU(unittest.TestCase):
         x = torch.rand((N, H, L, E))
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int()
         g[:, :, -4:] = -1
-        c = torch.ones(N, H, C)/9.
+        c = torch.ones(N, H, C) / 9.
         y = torch.zeros(N, H, C, E)
 
         aggregate_cpu(x, g, c, y)
@@ -120,7 +120,7 @@ class TestAggregateCPU(unittest.TestCase):
         C = 100
         x = torch.rand((N, H, L, E))
         g = (torch.arange(L) % C).view(L, 1, 1).repeat(1, N, H).int()
-        c = 0.1*torch.ones(C, N, H)
+        c = 0.1 * torch.ones(C, N, H)
         y = torch.zeros((C, N, H, E))
 
         s = time.time()
@@ -142,7 +142,7 @@ class TestAggregateCPU(unittest.TestCase):
 
         y = torch.rand((N, H, C, E))
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int()
-        c = 0.1*torch.ones(N, H, C)
+        c = 0.1 * torch.ones(N, H, C)
         x = torch.zeros((N, H, L, E))
 
         s = time.time()

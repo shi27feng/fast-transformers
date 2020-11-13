@@ -17,7 +17,7 @@ class TestSparseProductCPU(unittest.TestCase):
     def test_simple_product(self):
         X = torch.randn(10, 4, 100, 32)
         Y = torch.randn(10, 4, 100, 32)
-        topk = (torch.cumsum(torch.rand(10, 4, 100, 10)*10, dim=-1)).long()
+        topk = (torch.cumsum(torch.rand(10, 4, 100, 10) * 10, dim=-1)).long()
 
         products = sparse_dot_product(
             X,
@@ -49,7 +49,7 @@ class TestSparseProductCPU(unittest.TestCase):
         k = 32
         X = torch.randn(N, H, L, E)
         Y = torch.randn(N, H, S, E)
-        topk = (torch.cumsum(torch.rand(N, H, L, k)*40, dim=-1)).long()
+        topk = (torch.cumsum(torch.rand(N, H, L, k) * 40, dim=-1)).long()
 
         n_runs = 10
         s = time.time()
@@ -67,7 +67,7 @@ class TestSparseProductCPU(unittest.TestCase):
             torch.einsum("nhle,nhse->nhls", X, Y)
         e = time.time()
         t_f = (e - s) / n_runs
-        print("Sparse: {}, Full: {}, F/S: {}".format(t_s, t_f, t_f/t_s))
+        print("Sparse: {}, Full: {}, F/S: {}".format(t_s, t_f, t_f / t_s))
 
 
 if __name__ == "__main__":

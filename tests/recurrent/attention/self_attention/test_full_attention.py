@@ -48,8 +48,8 @@ class TestRecurrentFullAttention(unittest.TestCase):
         v_new, mem_new = att(q, k, v, memory)
         self.assertEqual(v_new.shape, (N, H, M))
         self.assertEqual(len(mem_new), 2)
-        self.assertEqual(mem_new[0].shape, (N, H, L+1, E))
-        self.assertEqual(mem_new[1].shape, (N, H, L+1, M))
+        self.assertEqual(mem_new[0].shape, (N, H, L + 1, E))
+        self.assertEqual(mem_new[1].shape, (N, H, L + 1, M))
 
     def test_correctness(self):
         # Prepare the inputs
@@ -76,7 +76,7 @@ class TestRecurrentFullAttention(unittest.TestCase):
             v2i, memory = rec_att(q[:, i], k[:, i], v[:, i], memory)
             v2.append(v2i)
         v2 = torch.stack(v2, dim=1)
-        self.assertLess(torch.abs(v1-v2).max(), 1e-5)
+        self.assertLess(torch.abs(v1 - v2).max(), 1e-5)
 
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
     def test_benchmark_cpu(self):
@@ -96,7 +96,7 @@ class TestRecurrentFullAttention(unittest.TestCase):
         for i in range(100):
             v, memory = att(q, k, v, memory)
         end = time.time()
-        print("CPU Time taken:", (end-start)*1000, "(ms)")
+        print("CPU Time taken:", (end - start) * 1000, "(ms)")
 
     @unittest.skipUnless(torch.cuda.is_available(), "no CUDA capable device")
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")

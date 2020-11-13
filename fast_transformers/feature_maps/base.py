@@ -18,6 +18,7 @@ from torch.nn import Module
 
 class FeatureMap(Module):
     """Define the FeatureMap interface."""
+
     def __init__(self, query_dims):
         super().__init__()
         self.query_dims = query_dims
@@ -49,14 +50,17 @@ class FeatureMap(Module):
         It is inherited by the subclasses so it is available in all feature
         maps.
         """
+
         def inner(query_dims):
             return cls(query_dims, *args, **kwargs)
+
         return inner
 
 
 class ActivationFunctionFeatureMap(FeatureMap):
     """Define a feature map that is simply an element-wise activation
     function."""
+
     def __init__(self, query_dims, activation_function):
         super().__init__(query_dims)
         self.activation_function = activation_function

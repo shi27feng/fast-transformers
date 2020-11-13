@@ -21,6 +21,7 @@ class TestRecurrentAttentionLayer(unittest.TestCase):
             N, H, E = q.shape
             _, _, D = v.shape
             return v.new_zeros((N, H, D)), m
+
         return inner
 
     def test_forward(self):

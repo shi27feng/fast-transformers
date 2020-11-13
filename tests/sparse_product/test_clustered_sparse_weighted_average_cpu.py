@@ -20,12 +20,12 @@ from fast_transformers.sparse_product import clustered_sparse_weighted_average
 
 def cluster_queries(Q, query_lengths, C, I, B):
     N, H, L, E = Q.shape
-    planes = Q.new_empty((B, E+1))
+    planes = Q.new_empty((B, E + 1))
     normal_(planes)
     planes[:, -1] = 0
-    hashes = compute_hashes(Q.view(N*H*L, E), planes).view(N, H, L)
+    hashes = compute_hashes(Q.view(N * H * L, E), planes).view(N, H, L)
     # Cluster the hashes and return the cluster index per query
-    groups, counts =  cluster(
+    groups, counts = cluster(
         hashes,
         query_lengths,
         clusters=C,
@@ -61,7 +61,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -80,7 +80,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
             torch.arange(H).view(1, H, 1, 1).to(self.device),
             topk_broadcast.long()
         ]
-        output = (weights.unsqueeze(-1)*values_selected).sum(-2)
+        output = (weights.unsqueeze(-1) * values_selected).sum(-2)
         output.sum().backward()
         grad = [torch.clone(weights.grad), torch.clone(values.grad)]
 
@@ -100,7 +100,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
 
     def test_forward(self):
         N = 5
-        H = 2 
+        H = 2
         L = 100
         S = 100
         E = 32
@@ -113,7 +113,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -132,7 +132,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
             topk_broadcast.long()
         ]
 
-        output = (weights.unsqueeze(-1)*values_selected).sum(-2)
+        output = (weights.unsqueeze(-1) * values_selected).sum(-2)
         output_hat = clustered_sparse_weighted_average(weights, values, topk, groups)
         self.assertLess(
             torch.abs(output - output_hat).max(),
@@ -155,7 +155,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()
@@ -168,7 +168,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
 
         weights = torch.rand(N, H, L, k).to(self.device).requires_grad_(True)
         values = torch.randn(N, H, S, E).to(self.device).requires_grad_(True)
-       
+
         n_runs = 20
         s = time.time()
         for i in range(n_runs):
@@ -196,7 +196,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
         K = torch.randn(N, H, S, E).to(self.device)
         lengths = torch.full((N,), L, dtype=torch.int32).to(self.device)
         groups, counts = cluster_queries(Q, lengths, C, I, B)
-        Q_grouped = aggregate(Q, groups, 1/counts.float())
+        Q_grouped = aggregate(Q, groups, 1 / counts.float())
         QK = torch.einsum("nhle,nhse->nhls", Q_grouped, K)
         _, topk = torch.topk(QK, k, dim=-1)
         topk = topk.contiguous()

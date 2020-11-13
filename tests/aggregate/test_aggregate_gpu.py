@@ -32,7 +32,7 @@ class TestAggregateGPU(unittest.TestCase):
 
         x = torch.rand((N, H, L, E)).cuda()
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int().cuda()
-        c = (.1*torch.ones(N, H, C)).cuda()
+        c = (.1 * torch.ones(N, H, C)).cuda()
         y = torch.zeros(N, H, C, E).cuda()
 
         aggregate_gpu(x, g, c, y)
@@ -53,14 +53,14 @@ class TestAggregateGPU(unittest.TestCase):
 
         y = torch.rand(N, H, C, E).cuda()
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int().cuda()
-        c = (.1*torch.ones(N, H, C)).cuda()
+        c = (.1 * torch.ones(N, H, C)).cuda()
         x = torch.rand((N, H, L, E)).cuda()
 
         broadcast_gpu(y, g, c, x)
         for i in range(C):
             self.assertTrue(
                 torch.all(
-                    x[:, :, i::C] == 0.1*y[:, :, i:i+1, :]
+                    x[:, :, i::C] == 0.1 * y[:, :, i:i + 1, :]
                 )
             )
 
@@ -73,7 +73,7 @@ class TestAggregateGPU(unittest.TestCase):
 
         x_start = torch.rand(N, H, L, E).cuda()
         x_end = torch.rand(N, H, L, E).cuda()
-        g = (torch.rand(N, H, L)*C).int().cuda()
+        g = (torch.rand(N, H, L) * C).int().cuda()
         c = torch.zeros(N, H, C).cuda()
         y = torch.zeros((N, H, C, E)).cuda()
 
@@ -93,13 +93,13 @@ class TestAggregateGPU(unittest.TestCase):
 
         c = c.view(N, H, C)
         # Aggregating into averages twice should be a noop
-        aggregate_gpu(x_start, g, 1./c, y)
+        aggregate_gpu(x_start, g, 1. / c, y)
         broadcast_gpu(y, g, torch.ones(N, H, C).cuda(), x_start)
         y.zero_()
-        aggregate_gpu(x_start, g, 1./c, y)
+        aggregate_gpu(x_start, g, 1. / c, y)
         broadcast_gpu(y, g, torch.ones(N, H, C).cuda(), x_end)
         self.assertLess(
-            torch.abs(x_start-x_end).max().item(),
+            torch.abs(x_start - x_end).max().item(),
             1e-6
         )
 
@@ -113,7 +113,7 @@ class TestAggregateGPU(unittest.TestCase):
         x = torch.rand((N, H, L, E)).cuda()
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int().cuda()
         g[:, :, -4:] = -1
-        c = torch.ones(N, H, C).cuda()/9.
+        c = torch.ones(N, H, C).cuda() / 9.
         y = torch.zeros(N, H, C, E).cuda()
 
         aggregate_gpu(x, g, c, y)
@@ -135,7 +135,7 @@ class TestAggregateGPU(unittest.TestCase):
         C = 100
         x = torch.rand(L, N, H, E).cuda()
         g = (torch.arange(L) % C).view(L, 1, 1).repeat(1, N, H).int().cuda()
-        c = (0.1*torch.ones(C, N, H)).cuda()
+        c = (0.1 * torch.ones(C, N, H)).cuda()
         y = torch.zeros((C, N, H, E)).cuda()
 
         for i in range(2000):
@@ -162,7 +162,7 @@ class TestAggregateGPU(unittest.TestCase):
 
         y = torch.rand(N, H, C, E).cuda()
         g = (torch.arange(L) % C).view(1, 1, L).repeat(N, H, 1).int().cuda()
-        c = (.1*torch.ones(N, H, C)).cuda()
+        c = (.1 * torch.ones(N, H, C)).cuda()
         x = torch.zeros((N, H, L, E)).cuda()
 
         for i in range(2000):

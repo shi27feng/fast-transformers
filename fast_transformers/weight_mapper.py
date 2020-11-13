@@ -17,6 +17,7 @@ import re
 class MappingRule(object):
     """A mapping rule can be applied to a key and value and it returns new keys
     and values to be added in the state dict."""
+
     def matches(self, key):
         """Check whether this mapping rule should be applied to this key."""
         raise NotImplementedError()
@@ -28,6 +29,7 @@ class MappingRule(object):
 
 class IdentityRule(MappingRule):
     """The identity rule matches all keys and returns them as is."""
+
     def matches(self, key):
         return True
 
@@ -38,6 +40,7 @@ class IdentityRule(MappingRule):
 class NotRule(MappingRule):
     """Decorate a MappingRule by using a logical not for the matches function
     and identity for the apply."""
+
     def __init__(self, rule):
         self.rule = rule
 
@@ -47,10 +50,12 @@ class NotRule(MappingRule):
     def apply(self, key, value):
         return [(key, value)]
 
+
 class OrRule(MappingRule):
     """Decorate some MappingRules using the logical or to create a matches
     function that returns True if any of the rules matches. In case of a match
     apply all of the rules."""
+
     def __init__(self, *rules):
         self.rules = rules
 
@@ -77,6 +82,7 @@ class RegexRule(MappingRule):
                  search pattern. If it is a callable it should follow the rules
                  of python re.sub().
     """
+
     def __init__(self, search, replace):
         self.pattern = re.compile(search)
         self.replace = replace
@@ -91,14 +97,15 @@ class RegexRule(MappingRule):
 class PytorchAttentionWeightsRule(MappingRule):
     """Map the merged MultiheadAttention weights to the corresponding keys and
     values."""
+
     def __init__(self):
         self.weight_pattern = "self_attn.in_proj_weight"
         self.bias_pattern = "self_attn.in_proj_bias"
 
     def matches(self, key):
         return (
-            self.weight_pattern in key or
-            self.bias_pattern in key
+                self.weight_pattern in key or
+                self.bias_pattern in key
         )
 
     def apply(self, key, value):
@@ -110,47 +117,47 @@ class PytorchAttentionWeightsRule(MappingRule):
                         self.weight_pattern,
                         "attention.query_projection.weight"
                     ),
-                    value[:N//3]
+                    value[:N // 3]
                 ),
                 (
                     key.replace(
                         self.weight_pattern,
                         "attention.key_projection.weight"
                     ),
-                    value[N//3:2*N//3]
+                    value[N // 3:2 * N // 3]
                 ),
                 (
                     key.replace(
                         self.weight_pattern,
                         "attention.value_projection.weight"
                     ),
-                    value[2*N//3:]
+                    value[2 * N // 3:]
                 )
             ]
         if self.bias_pattern in key:
-                return [
-                    (
-                        key.replace(
-                            self.bias_pattern,
-                            "attention.query_projection.bias"
-                        ),
-                        value[:N//3]
+            return [
+                (
+                    key.replace(
+                        self.bias_pattern,
+                        "attention.query_projection.bias"
                     ),
-                    (
-                        key.replace(
-                            self.bias_pattern,
-                            "attention.key_projection.bias"
-                        ),
-                        value[N//3:2*N//3]
+                    value[:N // 3]
+                ),
+                (
+                    key.replace(
+                        self.bias_pattern,
+                        "attention.key_projection.bias"
                     ),
-                    (
-                        key.replace(
-                            self.bias_pattern,
-                            "attention.value_projection.bias"
-                        ),
-                        value[2*N//3:]
-                    )
-                ]
+                    value[N // 3:2 * N // 3]
+                ),
+                (
+                    key.replace(
+                        self.bias_pattern,
+                        "attention.value_projection.bias"
+                    ),
+                    value[2 * N // 3:]
+                )
+            ]
 
 
 class SimpleMapper(object):
@@ -162,6 +169,7 @@ class SimpleMapper(object):
         add_identity: bool, if set to True add a catch all identity rule as the
                       final rule (default: True).
     """
+
     def __init__(self, rules=[], add_identity=True):
         self._rules = rules
         if add_identity:
@@ -206,6 +214,7 @@ class SimpleMapper(object):
 class PytorchMapper(SimpleMapper):
     """Map a Pytorch transformer encoder state dict to a fast transformers
     one."""
+
     def __init__(self):
         super(PytorchMapper, self).__init__([
             PytorchAttentionWeightsRule(),
@@ -261,6 +270,7 @@ class LongformerMapper(SimpleMapper):
 
     NOTE: The projections for the global attention are ignored.
     """
+
     def __init__(self):
         super(LongformerMapper, self).__init__(
             HugginfaceBertEncoderMapper.RULES + [

@@ -25,12 +25,15 @@ from watchdog.observers import Observer
 
 def throttled(once_every):
     last_time = [0]
+
     def decorator(f):
         def decorated(*args, **kwargs):
             if time.time() - last_time[0] > once_every:
                 last_time[0] = time.time()
                 return f(*args, **kwargs)
+
         return decorated
+
     return decorator
 
 

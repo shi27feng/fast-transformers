@@ -36,8 +36,8 @@ class TestWeightMapper(unittest.TestCase):
         t2 = TransformerEncoderBuilder.from_kwargs(
             n_layers=4,
             n_heads=4,
-            query_dimensions=128//4,
-            value_dimensions=128//4,
+            query_dimensions=128 // 4,
+            value_dimensions=128 // 4,
             feed_forward_dimensions=256,
             attention_type="full",
             final_normalization=False
@@ -72,24 +72,24 @@ class TestWeightMapper(unittest.TestCase):
 
         # Before the weight copy they should be different
         x = torch.rand(3, 10, 768)
-        o1 = bert.encoder(x, head_mask=[None]*12)[0]
+        o1 = bert.encoder(x, head_mask=[None] * 12)[0]
         o2 = encoder(x)
-        self.assertGreater(torch.abs(o1-o2).max().item(), 1)
+        self.assertGreater(torch.abs(o1 - o2).max().item(), 1)
 
         # And after the copy they should be exactly the same
         encoder.load_state_dict(
             HugginfaceBertEncoderMapper().map(bert.encoder.state_dict())
         )
-        o1 = bert.encoder(x, head_mask=[None]*12)[0]
+        o1 = bert.encoder(x, head_mask=[None] * 12)[0]
         o2 = encoder(x)
-        self.assertLess(torch.abs(o1-o2).max().item(), 1e-4)
+        self.assertLess(torch.abs(o1 - o2).max().item(), 1e-4)
 
     @unittest.skipUnless(Longformer, "Longformer is not installed")
     def test_longformer(self):
         config = LongformerConfig()
         config.attention_mode = "n2"
-        config.attention_window = [256]*12
-        config.attention_dilation = [1]*12
+        config.attention_window = [256] * 12
+        config.attention_dilation = [1] * 12
         longformer = Longformer(config)
         encoder = TransformerEncoderBuilder.from_kwargs(
             n_layers=12,
@@ -106,17 +106,17 @@ class TestWeightMapper(unittest.TestCase):
 
         # Before the weight copy they should be different
         x = torch.rand(3, 10, 768)
-        o1 = longformer.encoder(x, head_mask=[None]*12)[0]
+        o1 = longformer.encoder(x, head_mask=[None] * 12)[0]
         o2 = encoder(x)
-        self.assertGreater(torch.abs(o1-o2).max().item(), 1)
+        self.assertGreater(torch.abs(o1 - o2).max().item(), 1)
 
         # And after the copy they should be exactly the same
         encoder.load_state_dict(
             LongformerMapper().map(longformer.encoder.state_dict())
         )
-        o1 = longformer.encoder(x, head_mask=[None]*12)[0]
+        o1 = longformer.encoder(x, head_mask=[None] * 12)[0]
         o2 = encoder(x)
-        self.assertLess(torch.abs(o1-o2).max().item(), 1e-4)
+        self.assertLess(torch.abs(o1 - o2).max().item(), 1e-4)
 
 
 if __name__ == "__main__":

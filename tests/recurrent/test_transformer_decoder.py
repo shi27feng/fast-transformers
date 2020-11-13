@@ -76,7 +76,7 @@ class TestRecurrentTransformerDecoder(unittest.TestCase):
                 y2.append(y2i)
             y2 = torch.stack(y2, dim=1)
 
-            self.assertLess(torch.abs(y1-y2).max(), 1e-5)
+            self.assertLess(torch.abs(y1 - y2).max(), 1e-5)
 
     def test_mask_creation(self):
         N = 10

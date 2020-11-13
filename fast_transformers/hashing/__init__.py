@@ -8,6 +8,7 @@
 import torch
 
 from .hash_cpu import compute_hashes as compute_hashes_cpu
+
 try:
     from .hash_cuda import compute_hashes as compute_hashes_cuda
 except ImportError:

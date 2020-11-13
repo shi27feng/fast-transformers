@@ -31,6 +31,7 @@ class RecurrentCrossLinearAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, query_dimensions, feature_map=None, eps=1e-6,
                  event_dispatcher=""):
         super(RecurrentCrossLinearAttention, self).__init__()
@@ -61,7 +62,7 @@ class RecurrentCrossLinearAttention(Module):
             S, Z = state
 
         # Given S and Z now we can efficiently compute the new value
-        QZ = 1/(torch.einsum("nhd,nhd->nh", Q, Z)+self.eps)
+        QZ = 1 / (torch.einsum("nhd,nhd->nh", Q, Z) + self.eps)
         V = torch.einsum("nhd,nhmd,nh->nhm", Q, S, QZ)
 
         return V.contiguous(), [S, Z]

@@ -25,7 +25,7 @@ from ..hashing import compute_hashes
 class _GroupQueries(torch.autograd.Function):
     @staticmethod
     def forward(ctx, Q, clusters, counts):
-        factors = 1/counts.float()
+        factors = 1 / counts.float()
         q_grouped = aggregate(Q, clusters, factors)
         ctx.save_for_backward(clusters, factors)
 
@@ -88,6 +88,7 @@ class ClusteredAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, clusters, iterations=10, bits=32,
                  hash_bias=True, softmax_temp=None, attention_dropout=0.1,
                  event_dispatcher=""):
@@ -104,14 +105,14 @@ class ClusteredAttention(Module):
         N, H, L, E = Q.shape
 
         # Compute the hashes for all the queries
-        planes = Q.new_empty((self.bits, E+1))
+        planes = Q.new_empty((self.bits, E + 1))
         normal_(planes)
         if not self.hash_bias:
             planes[:, -1] = 0
-        hashes = compute_hashes(Q.view(N*H*L, E), planes).view(N, H, L)
+        hashes = compute_hashes(Q.view(N * H * L, E), planes).view(N, H, L)
 
         # Cluster the hashes and return the cluster index per query
-        groups =  cluster(
+        groups = cluster(
             hashes,
             query_lengths._lengths.int(),
             clusters=self.clusters,
@@ -140,13 +141,13 @@ class ClusteredAttention(Module):
         assert attn_mask.all_ones, ("Clustered attention cannot use an "
                                     "arbitrary attention mask.")
 
-        queries = queries.permute(0,2,1,3).contiguous()
-        keys = keys.permute(0,2,1,3).contiguous()
-        values = values.permute(0,2,1,3).contiguous()
+        queries = queries.permute(0, 2, 1, 3).contiguous()
+        keys = keys.permute(0, 2, 1, 3).contiguous()
+        values = values.permute(0, 2, 1, 3).contiguous()
 
         N, H, L, E = queries.shape
-        softmax_temp = self.softmax_temp or 1./sqrt(E)
-        
+        softmax_temp = self.softmax_temp or 1. / sqrt(E)
+
         # Cluster the queries into groups
         groups = self._create_query_groups(queries, query_lengths)
         Q_grouped = self._group_queries(queries, groups)

@@ -11,9 +11,10 @@ import time
 from fast_transformers.hashing import compute_hashes
 from fast_transformers.clustering.hamming import cluster
 
+
 def simple_lsh(X, A):
     B = (torch.einsum("nj,ij->ni", [X, A]) > 0).long()
-    bits = 2**torch.arange(A.shape[0])
+    bits = 2 ** torch.arange(A.shape[0])
     return torch.einsum("ni,i->n", [B, bits])
 
 
@@ -28,7 +29,7 @@ def generate_hash(n_points, d, b, h):
 def time_clustering(L, N, H, E,
                     n_batches, n_attentions,
                     k, n_buckets, n_iterations, verbose):
-    n_points = L * N * H 
+    n_points = L * N * H
     hashes = torch.zeros(n_points, dtype=torch.int64).cuda()
     hashes = generate_hash(n_points, E, n_buckets, hashes).view(N, H, L)
 
@@ -39,11 +40,11 @@ def time_clustering(L, N, H, E,
     cluster_bit_counts = torch.zeros((N, H, k, n_buckets),
                                      dtype=torch.int32).cuda()
     sequence_lengths = torch.ones((N,), dtype=torch.int32).cuda() * L
-     
+
     start = time.time()
     for batch_idx in range(int(n_batches)):
         for attention_idx in range(int(n_attentions)):
-            #hashes = generate_hash(n_points, E, n_buckets, hashes).view(L, N, H)
+            # hashes = generate_hash(n_points, E, n_buckets, hashes).view(L, N, H)
             cluster(
                 hashes, sequence_lengths,
                 groups=groups, counts=counts, centroids=centroids,
@@ -62,14 +63,14 @@ if __name__ == "__main__":
     H = 8
     E = 32
 
-    n_batches = 50000/N
+    n_batches = 50000 / N
     n_attentions = 3
-    
+
     k = 30
     n_buckets = 31
     n_iterations = 10
     verbose = 0
-    
+
     time_clustering(L, N, H, E,
                     n_batches, n_attentions,
                     k, n_buckets, n_iterations, verbose)

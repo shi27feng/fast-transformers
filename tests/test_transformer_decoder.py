@@ -60,7 +60,7 @@ class TestTransformerDecoder(unittest.TestCase):
             for i in range(L):
                 x, state = t1(x, memory, memory_lengths, state=state)
         end = time.time()
-        print("Softmax attention took", round(end-start, 2), "s")
+        print("Softmax attention took", round(end - start, 2), "s")
 
         x = torch.rand(B, D)
         state = None
@@ -69,7 +69,7 @@ class TestTransformerDecoder(unittest.TestCase):
             for i in range(L):
                 x, state = t2(x, memory, memory_lengths, state=state)
         end = time.time()
-        print("Linear attention took", round(end-start, 2), "s")
+        print("Linear attention took", round(end - start, 2), "s")
 
 
 if __name__ == "__main__":

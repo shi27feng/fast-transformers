@@ -4,17 +4,17 @@ name: tests
 # Test only pushes on master or pull requests on master
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
 
 # Build and run the tests
 jobs:
   test:
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        pytorch-version: [1.3.1, 1.5.0, 1.6.0]
+        python-version: [ 3.6, 3.7, 3.8 ]
+        pytorch-version: [ 1.3.1, 1.5.0, 1.6.0 ]
         exclude:
           - python-version: 3.8
             pytorch-version: 1.3.1

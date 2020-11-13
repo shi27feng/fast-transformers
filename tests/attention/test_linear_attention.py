@@ -42,12 +42,11 @@ class TestLinearAttention(unittest.TestCase):
 
         # Make sure that the key lengths is paid attention to
         q, k, v, m1, m2, m3 = self._get_inputs(S=10, D=1)
-        m3 = LengthMask(torch.tensor(list(range(10)))+1)
+        m3 = LengthMask(torch.tensor(list(range(10))) + 1)
         for i in range(9):
-            v[i, i+1:] = 1e9
+            v[i, i + 1:] = 1e9
         v_new = att(q, k, v, m1, m2, m3)
         self.assertLess(v_new.max().item(), 1)
-
 
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
     def test_benchmark_cpu(self):
@@ -63,7 +62,7 @@ class TestLinearAttention(unittest.TestCase):
         for i in range(10):
             v_new = att(q, k, v, m1, m2, m3)
         end = time.time()
-        print("CPU time taken:", (end-start)*1000, "(ms)")
+        print("CPU time taken:", (end - start) * 1000, "(ms)")
 
     @unittest.skipUnless(torch.cuda.is_available(), "no CUDA capable device")
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")

@@ -37,7 +37,7 @@ class TestTransformerEncoder(unittest.TestCase):
             TransformerEncoderLayer(
                 AttentionLayer(
                     ClusteredAttention(
-                        clusters = 10
+                        clusters=10
                     ),
                     d_model,
                     n_heads

@@ -31,6 +31,7 @@ class ConditionalFullAttention(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, other_attention, length_limit=512, softmax_temp=None,
                  attention_dropout=0.1, event_dispatcher=""):
         super(ConditionalFullAttention, self).__init__()

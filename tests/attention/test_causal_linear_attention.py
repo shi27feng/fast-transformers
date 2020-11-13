@@ -8,7 +8,6 @@ import unittest
 
 import torch
 
-
 from fast_transformers.masking import TriangularCausalMask, FullMask
 from fast_transformers.attention import CausalLinearAttention
 

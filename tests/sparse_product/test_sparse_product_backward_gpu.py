@@ -38,8 +38,8 @@ class TestSparseProductBackward(unittest.TestCase):
         Q = torch.randn(N, H, L, E).to(self.device).requires_grad_(True)
         K = torch.randn(N, H, S, E).to(self.device).requires_grad_(True)
         topk = torch.round(
-                torch.cumsum(torch.rand(N, H, L, k)*10, dim=-1)
-            ).long().to(self.device)
+            torch.cumsum(torch.rand(N, H, L, k) * 10, dim=-1)
+        ).long().to(self.device)
 
         self._zero_grad(Q, K)
         QK_full = torch.einsum("nhle,nhse->nhls", Q, K)
@@ -78,8 +78,8 @@ class TestSparseProductBackward(unittest.TestCase):
         Q = torch.randn(N, H, L, E).to(self.device).requires_grad_(True)
         K = torch.randn(N, H, S, E).to(self.device).requires_grad_(True)
         topk = torch.round(
-                torch.cumsum(torch.rand(N, H, L, k)*(S//k), dim=-1)
-            ).long().to(self.device)
+            torch.cumsum(torch.rand(N, H, L, k) * (S // k), dim=-1)
+        ).long().to(self.device)
 
         self._zero_grad(Q, K)
         for i in range(2000):
@@ -123,8 +123,8 @@ class TestSparseProductBackward(unittest.TestCase):
         Q = torch.randn(N, H, L, E).to(self.device).requires_grad_(True)
         K = torch.randn(N, H, S, E).to(self.device).requires_grad_(True)
         topk = torch.round(
-                torch.cumsum(torch.rand(N, H, L, k)*(S//k), dim=-1)
-            ).long().to(self.device)
+            torch.cumsum(torch.rand(N, H, L, k) * (S // k), dim=-1)
+        ).long().to(self.device)
 
         self._zero_grad(Q, K)
         for i in range(2000):

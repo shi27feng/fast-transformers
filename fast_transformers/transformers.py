@@ -39,10 +39,11 @@ class TransformerEncoderLayer(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, attention, d_model, d_ff=None, dropout=0.1,
                  activation="relu", event_dispatcher=""):
         super(TransformerEncoderLayer, self).__init__()
-        d_ff = d_ff or 4*d_model
+        d_ff = d_ff or 4 * d_model
         self.attention = attention
         self.linear1 = Linear(d_model, d_ff)
         self.linear2 = Linear(d_ff, d_model)
@@ -71,7 +72,7 @@ class TransformerEncoderLayer(Module):
         L = x.shape[1]
         attn_mask = attn_mask or FullMask(L, device=x.device)
         length_mask = length_mask or \
-            LengthMask(x.new_full((N,), L, dtype=torch.int64))
+                      LengthMask(x.new_full((N,), L, dtype=torch.int64))
 
         # Run self attention and add it to the input
         x = x + self.dropout(self.attention(
@@ -86,7 +87,7 @@ class TransformerEncoderLayer(Module):
         y = self.dropout(self.activation(self.linear1(y)))
         y = self.dropout(self.linear2(y))
 
-        return self.norm2(x+y)
+        return self.norm2(x + y)
 
 
 class TransformerEncoder(Module):
@@ -106,6 +107,7 @@ class TransformerEncoder(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, layers, norm_layer=None, event_dispatcher=""):
         super(TransformerEncoder, self).__init__()
         self.layers = ModuleList(layers)
@@ -132,7 +134,7 @@ class TransformerEncoder(Module):
         L = x.shape[1]
         attn_mask = attn_mask or FullMask(L, device=x.device)
         length_mask = length_mask or \
-            LengthMask(x.new_full((N,), L, dtype=torch.int64))
+                      LengthMask(x.new_full((N,), L, dtype=torch.int64))
 
         # Apply all the transformers
         for layer in self.layers:
@@ -169,10 +171,11 @@ class TransformerDecoderLayer(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, self_attention, cross_attention, d_model, d_ff=None,
                  dropout=0.1, activation="relu", event_dispatcher=""):
         super(TransformerDecoderLayer, self).__init__()
-        d_ff = d_ff or 4*d_model
+        d_ff = d_ff or 4 * d_model
         self.self_attention = self_attention
         self.cross_attention = cross_attention
         self.linear1 = Linear(d_model, d_ff)
@@ -215,11 +218,11 @@ class TransformerDecoderLayer(Module):
         L = x.shape[1]
         L_prime = memory.shape[1]
         x_mask = x_mask or FullMask(L, device=x.device)
-        x_length_mask = x_length_mask  or \
-            LengthMask(x.new_full((N,), L, dtype=torch.int64))
+        x_length_mask = x_length_mask or \
+                        LengthMask(x.new_full((N,), L, dtype=torch.int64))
         memory_mask = memory_mask or FullMask(L, L_prime, device=x.device)
         memory_length_mask = memory_length_mask or \
-            LengthMask(x.new_full((N,), L_prime, dtype=torch.int64))
+                             LengthMask(x.new_full((N,), L_prime, dtype=torch.int64))
 
         # First apply the self attention and add it to the input
         x = x + self.dropout(self.self_attention(
@@ -243,7 +246,7 @@ class TransformerDecoderLayer(Module):
         y = self.dropout(self.activation(self.linear1(y)))
         y = self.dropout(self.linear2(y))
 
-        return self.norm3(x+y)
+        return self.norm3(x + y)
 
 
 class TransformerDecoder(Module):
@@ -263,6 +266,7 @@ class TransformerDecoder(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, layers, norm_layer=None, event_dispatcher=""):
         super(TransformerDecoder, self).__init__()
         self.layers = ModuleList(layers)
@@ -276,11 +280,11 @@ class TransformerDecoder(Module):
         L = x.shape[1]
         L_prime = memory.shape[1]
         x_mask = x_mask or FullMask(L, device=x.device)
-        x_length_mask = x_length_mask  or \
-            LengthMask(x.new_full((N,), L, dtype=torch.int64))
+        x_length_mask = x_length_mask or \
+                        LengthMask(x.new_full((N,), L, dtype=torch.int64))
         memory_mask = memory_mask or FullMask(L, L_prime, device=x.device)
         memory_length_mask = memory_length_mask or \
-            LengthMask(x.new_full((N,), L_prime, dtype=torch.int64))
+                             LengthMask(x.new_full((N,), L_prime, dtype=torch.int64))
 
         # Apply all the transformer decoders
         for layer in self.layers:

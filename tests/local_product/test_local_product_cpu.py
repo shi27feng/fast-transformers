@@ -43,12 +43,12 @@ class TestLocalProductCPU(unittest.TestCase):
             QK = torch.full((N, H, L, local_context), -1e24,
                             dtype=torch.float32)
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
-                QK[:, :, i, kstart:kstart+(end-start)] = torch.einsum(
+                kstart = local_context // 2 - abs(i - start)
+                QK[:, :, i, kstart:kstart + (end - start)] = torch.einsum(
                     "nhe,nhle->nhl",
                     Q[:, :, i],
                     K[:, :, start:end]
@@ -73,19 +73,19 @@ class TestLocalProductCPU(unittest.TestCase):
             lengths = torch.full((N,), L, dtype=torch.long)
             grad_in = torch.ones(N, H, L, local_context)
             GQ, GK = self.kernels[CP]["dot_backward"](Q, K, lengths, grad_in,
-                                                        local_context)
+                                                      local_context)
 
             Q = Q.requires_grad_(True)
             K = K.requires_grad_(True)
             QK = torch.full((N, H, L, local_context), -1e24,
                             dtype=torch.float32)
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
-                QK[:, :, i, kstart:kstart+(end-start)] = torch.einsum(
+                kstart = local_context // 2 - abs(i - start)
+                QK[:, :, i, kstart:kstart + (end - start)] = torch.einsum(
                     "nhe,nhle->nhl",
                     Q[:, :, i],
                     K[:, :, start:end]
@@ -122,7 +122,7 @@ class TestLocalProductCPU(unittest.TestCase):
         end = time.time()
         print("[{}] CPU time taken: {} (ms)".format(
             CP,
-            (end-start)*1000
+            (end - start) * 1000
         ))
 
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
@@ -144,14 +144,14 @@ class TestLocalProductCPU(unittest.TestCase):
 
             out = torch.zeros(N, H, L, E)
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
+                kstart = local_context // 2 - abs(i - start)
                 out[:, :, i] = torch.einsum(
                     "nhl,nhle->nhe",
-                    A[:, :, i, kstart:kstart+end-start],
+                    A[:, :, i, kstart:kstart + end - start],
                     V[:, :, start:end]
                 )
 
@@ -178,14 +178,14 @@ class TestLocalProductCPU(unittest.TestCase):
             V = V.requires_grad_(True)
             out = torch.zeros(N, H, L, E)
             for i in range(L):
-                start = i - local_context//2
+                start = i - local_context // 2
                 end = start + local_context
                 start = max(0, start)
                 end = min(L, end)
-                kstart = local_context//2 - abs(i-start)
+                kstart = local_context // 2 - abs(i - start)
                 out[:, :, i] = torch.einsum(
                     "nhl,nhle->nhe",
-                    A[:, :, i, kstart:kstart+end-start],
+                    A[:, :, i, kstart:kstart + end - start],
                     V[:, :, start:end]
                 )
             out.sum().backward()

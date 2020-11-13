@@ -16,12 +16,14 @@ try:
 except ImportError:
     pass
 
+
 def simple_lsh(X, A):
     X = X.cpu()
     A = A.cpu()
     B = (torch.einsum("nj,ij->ni", [X, A[:, :-1]]) > A[None, :, -1]).long()
-    bits = 2**torch.arange(A.shape[0])
+    bits = 2 ** torch.arange(A.shape[0])
     return torch.einsum("ni,i->n", [B, bits]).cuda()
+
 
 class TestHashGPU(unittest.TestCase):
     @classmethod
@@ -33,12 +35,12 @@ class TestHashGPU(unittest.TestCase):
         for bits in range(10, 63):
             x = torch.rand(100, 32).to("cuda")
             a = torch.randn(bits, 33).to("cuda")
-            a[:,-1] = 0.0
+            a[:, -1] = 0.0
             h1 = simple_lsh(x, a)
             h2 = torch.zeros_like(h1)
             h3 = torch.zeros_like(h1)
             hash_cuda.compute_hashes(x, a, h2)
-            self.assertTrue(torch.all(h1==h2))
+            self.assertTrue(torch.all(h1 == h2))
 
     @unittest.skipUnless(os.getenv("BENCHMARK_TESTS", ""), "no benchmarks")
     def test_benchmark_hash(self):
@@ -47,7 +49,7 @@ class TestHashGPU(unittest.TestCase):
         H = 8
         E = 32
         B = 63
-        x = torch.rand(N*L*H, 32).to("cuda")
+        x = torch.rand(N * L * H, 32).to("cuda")
         a = torch.randn(B, 33).to("cuda")
         h1 = simple_lsh(x, a)
         h2 = torch.zeros_like(h1)
@@ -77,10 +79,8 @@ class TestHashGPU(unittest.TestCase):
         torch.cuda.synchronize()
         t_cuda = s.elapsed_time(e)
 
-        print(t_simple, t_cuda, t_simple/t_cuda)
-
+        print(t_simple, t_cuda, t_simple / t_cuda)
 
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -15,6 +15,7 @@ class Event(object):
     ---------
         source: torch.nn.Module instance that dispatched this event
     """
+
     def __init__(self, source):
         self.source = source
 
@@ -28,6 +29,7 @@ class AttentionEvent(Event):
         attention_matrix: torch.tensor of the multihead attention matrix
                           computed in the corresponding attention layer
     """
+
     def __init__(self, source, attention_matrix):
         super(AttentionEvent, self).__init__(source)
         self.attention_matrix = attention_matrix
@@ -44,6 +46,7 @@ class QKVEvent(Event):
         keys: torch.tensor containing the keys in shape NSHE
         values: torch.tensor containing the values in shape NSHD
     """
+
     def __init__(self, source, queries, keys, values):
         super(QKVEvent, self).__init__(source)
         self.queries = queries

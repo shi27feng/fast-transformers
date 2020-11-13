@@ -21,6 +21,7 @@ class TestAttentionLayer(unittest.TestCase):
             N, L, H, E = q.shape
             _, S, _, D = v.shape
             return v.new_zeros((N, L, H, D))
+
         return inner
 
     def test_forward(self):

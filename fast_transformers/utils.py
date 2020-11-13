@@ -22,6 +22,7 @@ def make_mirror(src_module, dst_module):
     -------
         None, it changes dst_module in place
     """
+
     def setattr_recursive(mod, key, value):
         key, *next_key = key.split(".", maxsplit=1)
         if not next_key:

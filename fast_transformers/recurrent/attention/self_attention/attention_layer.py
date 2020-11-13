@@ -35,13 +35,14 @@ class RecurrentAttentionLayer(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, attention, d_model, n_heads, d_keys=None,
                  d_values=None, event_dispatcher=""):
         super(RecurrentAttentionLayer, self).__init__()
 
         # Fill d_keys and d_values
-        d_keys = d_keys or (d_model//n_heads)
-        d_values = d_values or (d_model//n_heads)
+        d_keys = d_keys or (d_model // n_heads)
+        d_values = d_values or (d_model // n_heads)
 
         self.inner_attention = attention
         self.query_projection = Linear(d_model, d_keys * n_heads)

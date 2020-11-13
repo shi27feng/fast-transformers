@@ -8,6 +8,7 @@
 import torch
 
 from .cluster_cpu import cluster as cluster_cpu
+
 try:
     from .cluster_cuda import cluster as cluster_gpu
 except ImportError:
@@ -15,16 +16,16 @@ except ImportError:
 
 
 def cluster(
-    hashes,
-    lengths,
-    groups=None,
-    counts=None,
-    centroids=None,
-    distances=None,
-    bitcounts=None,
-    clusters=30,
-    iterations=10,
-    bits=32
+        hashes,
+        lengths,
+        groups=None,
+        counts=None,
+        centroids=None,
+        distances=None,
+        bitcounts=None,
+        clusters=30,
+        iterations=10,
+        bits=32
 ):
     """Cluster hashes using a few iterations of K-Means with hamming distance.
 
@@ -86,7 +87,7 @@ def cluster(
             centroids = torch.empty((N, H, clusters), dtype=torch.int64,
                                     device=device)
         K = centroids.numel() // N // H
-        #K = clusters
+        # K = clusters
         if counts is None:
             counts = torch.empty((N, H, K), dtype=torch.int32, device=device)
         if distances is None:
@@ -108,4 +109,3 @@ def cluster(
         )
 
         return groups, counts
-        

@@ -47,10 +47,11 @@ class RecurrentTransformerEncoderLayer(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, attention, d_model, d_ff=None, dropout=0.1,
                  activation="relu", event_dispatcher=""):
         super(RecurrentTransformerEncoderLayer, self).__init__()
-        d_ff = d_ff or 4*d_model
+        d_ff = d_ff or 4 * d_model
         self.attention = attention
         self.linear1 = Linear(d_model, d_ff)
         self.linear2 = Linear(d_ff, d_model)
@@ -83,7 +84,7 @@ class RecurrentTransformerEncoderLayer(Module):
         y = self.dropout(self.activation(self.linear1(y)))
         y = self.dropout(self.linear2(y))
 
-        return self.norm2(x+y), state
+        return self.norm2(x + y), state
 
 
 class RecurrentTransformerEncoder(Module):
@@ -103,6 +104,7 @@ class RecurrentTransformerEncoder(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, layers, norm_layer=None, event_dispatcher=""):
         super(RecurrentTransformerEncoder, self).__init__()
         self.layers = ModuleList(layers)
@@ -125,7 +127,7 @@ class RecurrentTransformerEncoder(Module):
         # Initialize the memory to None if not given
         state = check_state(state, memory)
         if state is None:
-            state = [None]*len(self.layers)
+            state = [None] * len(self.layers)
 
         # Apply all the transformers
         for i, layer in enumerate(self.layers):
@@ -163,10 +165,11 @@ class RecurrentTransformerDecoderLayer(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, self_attention, cross_attention, d_model, d_ff=None,
                  dropout=0.1, activation="relu", event_dispatcher=""):
         super(RecurrentTransformerDecoderLayer, self).__init__()
-        d_ff = d_ff or 4*d_model
+        d_ff = d_ff or 4 * d_model
         self.self_attention = self_attention
         self.cross_attention = cross_attention
         self.linear1 = Linear(d_model, d_ff)
@@ -200,7 +203,7 @@ class RecurrentTransformerDecoderLayer(Module):
         N = x.shape[0]
         L = memory.shape[1]
         memory_length_mask = memory_length_mask or \
-            LengthMask(x.new_full((N,), L, dtype=torch.int64))
+                             LengthMask(x.new_full((N,), L, dtype=torch.int64))
 
         # Extract the individual states for the self attention and the cross
         # attention
@@ -221,7 +224,7 @@ class RecurrentTransformerDecoderLayer(Module):
         y = self.dropout(self.activation(self.linear1(y)))
         y = self.dropout(self.linear2(y))
 
-        return self.norm3(x+y), [self_state, cross_state]
+        return self.norm3(x + y), [self_state, cross_state]
 
 
 class RecurrentTransformerDecoder(Module):
@@ -240,6 +243,7 @@ class RecurrentTransformerDecoder(Module):
                           module for dispatching events (default: the default
                           global dispatcher)
     """
+
     def __init__(self, layers, norm_layer=None, event_dispatcher=""):
         super(RecurrentTransformerDecoder, self).__init__()
         self.layers = ModuleList(layers)
@@ -264,7 +268,7 @@ class RecurrentTransformerDecoder(Module):
         """
         # Initialize the state to None if not given
         if state is None:
-            state = [None]*len(self.layers)
+            state = [None] * len(self.layers)
 
         # Apply all the transformers
         for i, layer in enumerate(self.layers):

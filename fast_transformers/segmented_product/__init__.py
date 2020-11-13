@@ -6,9 +6,8 @@
 
 import torch
 
-
 from .sgm_prod_cpu import sgm_dot_prod as sgm_dot_prod_cpu, \
-    segmented_dot_backward as segmented_dot_backward_cpu
+    sgm_dot_backward as sgm_dot_backward_cpu
 
 try:
     from .sgm_prod_cuda import \
@@ -39,7 +38,7 @@ class SegmentedDotProduct(torch.autograd.Function):
         device = Q.device
         N, H, L, _ = Q.shape
         _, _, _, M = V.shape
-        
+
         product = torch.zeros((N, H, L, M), device=device)
 
         # Actually perform the dot product
@@ -48,7 +47,7 @@ class SegmentedDotProduct(torch.autograd.Function):
             K.data,
             V.data,
             product,
-            segments   # segment vector
+            segments  # segment vector
         )
 
         return product

@@ -43,7 +43,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
             torch.arange(H).view(1, H, 1, 1).to(self.device),
             topk
         ]
-        output = (weights.unsqueeze(-1)*values_selected).sum(-2)
+        output = (weights.unsqueeze(-1) * values_selected).sum(-2)
         output.sum().backward()
         grad = [torch.clone(weights.grad), torch.clone(values.grad)]
 
@@ -70,8 +70,8 @@ class TestSparseWeightedAverage(unittest.TestCase):
         E = 32
         k = 5
 
-        weights = torch.arange(0,k).expand(N, H, L, k).to(self.device).float().requires_grad_(True)
-        values = torch.arange(0,E).expand(N, H, L, E).to(self.device).float().requires_grad_(True)
+        weights = torch.arange(0, k).expand(N, H, L, k).to(self.device).float().requires_grad_(True)
+        values = torch.arange(0, E).expand(N, H, L, E).to(self.device).float().requires_grad_(True)
 
         attn = torch.arange(0, S).expand(N, H, L, S).to(self.device).float().requires_grad_(False)
         topk_v, topk = torch.topk(attn, k, dim=-1)
@@ -81,7 +81,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
             torch.arange(H).view(1, H, 1, 1).to(self.device),
             topk
         ]
-        output = (weights.unsqueeze(-1)*values_selected).sum(-2)
+        output = (weights.unsqueeze(-1) * values_selected).sum(-2)
         output_hat = sparse_weighted_average(weights, values, topk)
         self.assertLess(
             torch.abs(output - output_hat).max(),
@@ -136,6 +136,7 @@ class TestSparseWeightedAverage(unittest.TestCase):
         t_sparse = (e - s) / n_runs
 
         print('T_sparse Forward Backward:{}'.format(t_sparse))
+
 
 if __name__ == "__main__":
     unittest.main()

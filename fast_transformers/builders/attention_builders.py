@@ -50,10 +50,10 @@ class BaseAttentionBuilder(BaseBuilder):
 
     def __repr__(self):
         return (
-            "{}.from_kwargs(\n".format(self.__class__.__name__) + 
-            "\n".join(["    {}={!r},".format(k, v)
-                       for k, v in self._parameters.items()])[:-1] +
-            "\n)"
+                "{}.from_kwargs(\n".format(self.__class__.__name__) +
+                "\n".join(["    {}={!r},".format(k, v)
+                           for k, v in self._parameters.items()])[:-1] +
+                "\n)"
         )
 
     def get(self, attention_type):
@@ -90,7 +90,7 @@ class BaseAttentionBuilder(BaseBuilder):
             raise ValueError(("Invalid attention_type argument "
                               "{!r}").format(attention_type))
         return attentions[0]
-        
+
     def _construct_attention(self, attention_type, decorated=[]):
         """Construct an attention implementation object.
 
@@ -117,6 +117,7 @@ class BaseAttentionBuilder(BaseBuilder):
 class AttentionBuilder(BaseAttentionBuilder):
     """Build attention implementations for batch sequence processing or
     training."""
+
     def __init__(self):
         super(AttentionBuilder, self).__init__(AttentionRegistry)
 
@@ -124,6 +125,7 @@ class AttentionBuilder(BaseAttentionBuilder):
 class RecurrentAttentionBuilder(BaseAttentionBuilder):
     """Build attention implementations for autoregressive sequence
     processing."""
+
     def __init__(self):
         super(RecurrentAttentionBuilder, self).__init__(
             RecurrentAttentionRegistry
@@ -133,6 +135,7 @@ class RecurrentAttentionBuilder(BaseAttentionBuilder):
 class RecurrentCrossAttentionBuilder(BaseAttentionBuilder):
     """Build attention implementations for autoregressive cross attention
     computation."""
+
     def __init__(self):
         super(RecurrentCrossAttentionBuilder, self).__init__(
             RecurrentCrossAttentionRegistry
