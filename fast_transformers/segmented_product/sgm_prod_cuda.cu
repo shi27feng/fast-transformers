@@ -169,8 +169,6 @@ void sgm_dot_prod(
     }
 }
 
-
-
 // we need shared memory to store
 // Forward direction
 // keys, values, gradout
@@ -180,9 +178,15 @@ void sgm_dot_prod(
 // kv_backwards, results
 // Shared memory usage
 // Forward
-// keys: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
+//     keys: E * T,
+//     (values, gradout): M_per_block * T,
+//     kv: E * M_per_block,
+//     results: E
 // Backward
-// queries: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
+//     queries: E * T,
+//     (values, gradout): M_per_block * T,
+//     kv: E * M_per_block,
+//     results: E
 // Total memory:
 __global__ void sgm_dot_backward_query_key_kernel(
     const float_accessor queries,
@@ -303,7 +307,6 @@ __global__ void sgm_dot_backward_query_key_kernel(
     kv[n][h][e][m] = shared_kv[m_local * E + e];
     kv_backwards[n][h][e][m] = shared_kv_bw[m_local * E + e];
 }
-
 
 __global__ void sgm_dot_backward_value_kernel(
     const float_accessor queries,
