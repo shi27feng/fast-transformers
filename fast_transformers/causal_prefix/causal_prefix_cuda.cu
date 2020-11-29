@@ -37,7 +37,8 @@ __device__ void get_result(
     }
 }
 
-__global__ void sgm_dot_prod_kernel(
+
+__global__ void causal_prefix_sum_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -125,11 +126,10 @@ __global__ void sgm_dot_prod_kernel(
     kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
-void sgm_dot_prod(
+void causal_prefix_sum(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
-    const torch::Tensor segments,
     torch::Tensor product
 ) {
     int N = queries.size(0);   // number of batches
@@ -157,7 +157,7 @@ void sgm_dot_prod(
     const int shared_mem_forward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
 
     for (int l_offset = 0; l_offset < L; l_offset += T) {
-        segmented_dot_product_kernel
+        causal_dot_product_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_forward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -169,6 +169,8 @@ void sgm_dot_prod(
     }
 }
 
+
+
 // we need shared memory to store
 // Forward direction
 // keys, values, gradout
@@ -178,17 +180,11 @@ void sgm_dot_prod(
 // kv_backwards, results
 // Shared memory usage
 // Forward
-//     keys: E * T,
-//     (values, gradout): M_per_block * T,
-//     kv: E * M_per_block,
-//     results: E
+// keys: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
 // Backward
-//     queries: E * T,
-//     (values, gradout): M_per_block * T,
-//     kv: E * M_per_block,
-//     results: E
+// queries: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
 // Total memory:
-__global__ void sgm_dot_backward_query_key_kernel(
+__global__ void causal_prefix_backward_query_key_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -308,7 +304,8 @@ __global__ void sgm_dot_backward_query_key_kernel(
     kv_backwards[n][h][e][m] = shared_kv_bw[m_local * E + e];
 }
 
-__global__ void sgm_dot_backward_value_kernel(
+
+__global__ void causal_prefix_backward_value_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -399,11 +396,10 @@ __global__ void sgm_dot_backward_value_kernel(
 }
 
 
-void sgm_dot_backward(
+void causal_prefix_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
-    const torch::Tensor segments,
     const torch::Tensor grad_out,
     torch::Tensor grad_queries,
     torch::Tensor grad_keys,
@@ -437,7 +433,7 @@ void sgm_dot_backward(
     int T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
     const int shared_mem_qk_backward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
     for (int l_offset = 0; l_offset < L; l_offset += T) {
-        segmented_dot_backward_query_key_kernel
+        causal_dot_backward_query_key_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_qk_backward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -464,7 +460,7 @@ void sgm_dot_backward(
     const int shared_mem_v_backward = ((T*shared_mem_per_time) + shared_mem_const) * sizeof(float);
     kv.zero_();
     for (int l_offset=0; l_offset < L; l_offset += T) {
-        segmented_dot_backward_value_kernel
+        causal_dot_backward_value_kernel
             <<<blocks_value, MPB, shared_mem_v_backward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -481,14 +477,14 @@ void sgm_dot_backward(
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "sgm_dot_prod",
-        &sgm_dot_prod,
+        "causal_prefix_sum",
+        &causal_prefix_sum,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "sgm_dot_backward",
-        &sgm_dot_backward,
-        "Compute the gradients for the segmented dot product."
+        "causal_prefix_backward",
+        &causal_prefix_backward,
+        "Compute the gradients for the causal dot product."
     );
 }
