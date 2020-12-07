@@ -12,9 +12,9 @@
  * b \in R^B
  */
 inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float * bi = b;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             *out += (*a) * (*bi);
             out++;
             bi++;
@@ -25,7 +25,7 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
 
 
 /**
- * Implement a vector matrix product v*m and save it into out.
+ * Implement a vector matrix product [v * m] and save it into out.
  *
  * v \in R^A
  * m \in R^{AxB}
@@ -33,13 +33,13 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
 inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     // TODO: Consider removing the zeroing part and assuming out already
     //       contains 0s
-    for (int i=0; i<B; i++) {
+    for (int i = 0; i < B; i++) {
         out[i] = 0;
     }
 
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float *oi = out;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             *oi += (*v) * (*m);
             oi++;
             m++;
@@ -56,10 +56,10 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
  * m \in R^{AxB}
  */
 inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float *vi = v;
         float s = 0;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             s += (*vi) * (*m);
             vi++;
             m++;
