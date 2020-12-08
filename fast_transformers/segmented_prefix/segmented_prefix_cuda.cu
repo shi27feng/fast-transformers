@@ -37,7 +37,7 @@ __device__ void get_result(
     }
 }
 
-__global__ void sgm_dot_prod_kernel(
+__global__ void segmented_prefix_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -125,7 +125,7 @@ __global__ void sgm_dot_prod_kernel(
     kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
-void sgm_dot_prod(
+void segmented_prefix_prod(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -188,7 +188,7 @@ void sgm_dot_prod(
 //     kv: E * M_per_block,
 //     results: E
 // Total memory:
-__global__ void sgm_dot_backward_query_key_kernel(
+__global__ void segmented_prefix_backward_query_key_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -308,7 +308,7 @@ __global__ void sgm_dot_backward_query_key_kernel(
     kv_backwards[n][h][e][m] = shared_kv_bw[m_local * E + e];
 }
 
-__global__ void sgm_dot_backward_value_kernel(
+__global__ void segmented_prefix_backward_value_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -399,7 +399,7 @@ __global__ void sgm_dot_backward_value_kernel(
 }
 
 
-void sgm_dot_backward(
+void segmented_prefix_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -481,14 +481,14 @@ void sgm_dot_backward(
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "sgm_dot_prod",
-        &sgm_dot_prod,
+        "segmented_prefix_prod",
+        &segmented_prefix_prod,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "sgm_dot_backward",
-        &sgm_dot_backward,
+        "segmented_prefix_backward",
+        &segmented_prefix_backward,
         "Compute the gradients for the segmented dot product."
     );
 }

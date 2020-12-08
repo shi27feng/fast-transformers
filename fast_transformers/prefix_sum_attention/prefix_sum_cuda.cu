@@ -38,7 +38,7 @@ __device__ void get_result(
 }
 
 
-__global__ void causal_prefix_sum_kernel(
+__global__ void prefix_sum_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -126,7 +126,7 @@ __global__ void causal_prefix_sum_kernel(
     kv[n][h][e][m] = shared_kv[e_local * M + m];
 }
 
-void causal_prefix_sum(
+void prefix_sum(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -184,7 +184,7 @@ void causal_prefix_sum(
 // Backward
 // queries: E*T, (values, gradout): M_per_block*T, kv:E*M_per_block, results:E
 // Total memory:
-__global__ void causal_prefix_backward_query_key_kernel(
+__global__ void prefix_backward_query_key_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -305,7 +305,7 @@ __global__ void causal_prefix_backward_query_key_kernel(
 }
 
 
-__global__ void causal_prefix_backward_value_kernel(
+__global__ void prefix_backward_value_kernel(
     const float_accessor queries,
     const float_accessor keys,
     const float_accessor values,
@@ -396,7 +396,7 @@ __global__ void causal_prefix_backward_value_kernel(
 }
 
 
-void causal_prefix_backward(
+void prefix_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -477,14 +477,14 @@ void causal_prefix_backward(
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "causal_prefix_sum",
-        &causal_prefix_sum,
+        "prefix_sum",
+        &prefix_sum,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "causal_prefix_backward",
-        &causal_prefix_backward,
+        "prefix_backward",
+        &prefix_backward,
         "Compute the gradients for the causal dot product."
     );
 }

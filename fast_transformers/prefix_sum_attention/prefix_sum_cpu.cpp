@@ -2,19 +2,19 @@
 // Copyright (c) 2020 VCLA, UCLA [vcla.stat.ucla.edu]
 // Written by Feng Shi <shi.feng@cs.ucla.edu>,
 //
-
 #include <torch/extension.h>
 
+
 /**
- * Compute a*b^T and save it into out.
+ * Compute a * b^T and save it into out.
  *
  * a \in R^A
  * b \in R^B
  */
 inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float * bi = b;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             *out += (*a) * (*bi);
             out++;
             bi++;
@@ -23,8 +23,9 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
     }
 }
 
+
 /**
- * Implement a vector matrix product v*m and save it into out.
+ * Implement a vector matrix product [v * m] and save it into out.
  *
  * v \in R^A
  * m \in R^{AxB}
@@ -32,13 +33,13 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
 inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     // TODO: Consider removing the zeroing part and assuming out already
     //       contains 0s
-    for (int i=0; i<B; i++) {
+    for (int i = 0; i < B; i++) {
         out[i] = 0;
     }
 
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float *oi = out;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             *oi += (*v) * (*m);
             oi++;
             m++;
@@ -47,6 +48,7 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
+
 /**
  * Implement a vector transposed-matrix product and save it into out.
  *
@@ -54,10 +56,10 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
  * m \in R^{AxB}
  */
 inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
-    for (int i=0; i<A; i++) {
+    for (int i = 0; i < A; i++) {
         float *vi = v;
         float s = 0;
-        for (int j=0; j<B; j++) {
+        for (int j = 0; j < B; j++) {
             s += (*vi) * (*m);
             vi++;
             m++;
@@ -68,13 +70,14 @@ inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
+
 /**
- * Compute the segmented products of queries, keys and values.
+ * Compute the causally masked dot products of queries, keys and values.
  *
  * Basically compute V_j' = (Q_{0:j} * K_{0:j}^T) * V_{0:j} for all j. The
  * computation is done efficiently by changing the order of the dot products.
  */
-void sgm_dot_prod(
+void prefix_sum(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -118,13 +121,14 @@ void sgm_dot_prod(
     }
 }
 
+
 /**
  * Compute the gradients of queries, keys and values given the gradient of the
- * segmented_dot_product output.
+ * prefix_sum output.
  *
  * Make sure that everything is computed in O(N D^2) complexity.
  */
-void sgm_dot_backward(
+void prefix_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -150,13 +154,13 @@ void sgm_dot_backward(
     auto gva = grad_values.accessor<float, 4>();
 
     #pragma omp parallel for collapse(2)
-    for (int n=0; n<N; n++) {
-        for (int h=0; h<H; h++) {
+    for (int n = 0; n < N; n++) {
+        for (int h = 0; h < H; h++) {
             auto kv = torch::zeros({E, M}, queries.options());
             float *kvp = kv.data_ptr<float>();
 
             // Compute the gradient wrt the queries
-            for (int l=0; l<L; l++) {
+            for (int l = 0; l < L; l++) {
                 vvt_dot(
                     &ka[n][h][l][0],
                     &va[n][h][l][0],
@@ -175,7 +179,7 @@ void sgm_dot_backward(
 
             // Compute the gradient wrt the keys and values
             kv.zero_();
-            for (int l=L-1; l>=0; l--) {
+            for (int l = L - 1; l >= 0; l--) {
                 vvt_dot(
                     &qa[n][h][l][0],
                     &ga[n][h][l][0],
@@ -202,17 +206,18 @@ void sgm_dot_backward(
     }
 }
 
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "sgm_dot_prod",
-        &sgm_dot_prod,
+        "prefix_sum",
+        &prefix_sum,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "sgm_dot_backward",
-        &sgm_dot_backward,
+        "prefix_backward",
+        &prefix_backward,
         "Compute the gradient of queries, keys and values given the gradient "
-        "of sgm_dot_prod."
+        "of prefix_sum."
     );
 }

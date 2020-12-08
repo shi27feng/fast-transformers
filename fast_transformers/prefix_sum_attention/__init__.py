@@ -5,27 +5,27 @@
 
 import torch
 
-from .causal_prefix_cpu import causal_prefix_sum as causal_prefix_sum_cpu, \
-    causal_prefix_backward as causal_prefix_backward_cpu
+from .prefix_sum_cpu import prefix_sum as prefix_sum_cpu, \
+    prefix_backward as prefix_backward_cpu
 
 try:
-    from .causal_prefix_cuda import \
-        causal_prefix_sum as causal_prefix_sum_cuda, \
-        causal_prefix_backward as causal_prefix_backward_cuda
+    from .prefix_sum_cuda import \
+        prefix_sum as prefix_sum_cuda, \
+        prefix_backward as prefix_backward_cuda
 except ImportError:
-    causal_prefix_sum_cuda = causal_prefix_backward_cuda = None
+    prefix_sum_cuda = prefix_backward_cuda = None
 
 
-class CausalPrefixSum(torch.autograd.Function):
+class PrefixSumAttention(torch.autograd.Function):
     """Compute the weighted sum of values but attending only to previous
     values."""
     prefix = {
-        "cpu": causal_prefix_sum_cpu,
-        "cuda": causal_prefix_sum_cuda
+        "cpu": prefix_sum_cpu,
+        "cuda": prefix_sum_cuda
     }
     prefix_backward = {
-        "cpu": causal_prefix_backward_cpu,
-        "cuda": causal_prefix_backward_cuda
+        "cpu": prefix_backward_cpu,
+        "cuda": prefix_backward_cuda
     }
 
     @staticmethod
@@ -40,7 +40,7 @@ class CausalPrefixSum(torch.autograd.Function):
         product = torch.zeros((N, H, L, M), device=device)
 
         # Actually perform the prefix sum
-        CausalPrefixSum.prefix[device.type](
+        PrefixSumAttention.prefix[device.type](
             Q.data,
             K.data,
             V.data,
@@ -60,7 +60,7 @@ class CausalPrefixSum(torch.autograd.Function):
         grad_V = torch.zeros_like(V)
 
         # Actually compute the gradients
-        CausalPrefixSum.prefix_backward[Q.device.type](
+        PrefixSumAttention.prefix_backward[Q.device.type](
             Q.data,
             K.data,
             V.data,
@@ -74,4 +74,4 @@ class CausalPrefixSum(torch.autograd.Function):
 
 
 # Alias the autograd functions to python style snake case naming
-causal_prefix_sum = CausalPrefixSum.apply
+prefix_sum = PrefixSumAttention.apply

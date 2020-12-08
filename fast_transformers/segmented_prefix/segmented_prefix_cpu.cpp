@@ -2,19 +2,19 @@
 // Copyright (c) 2020 VCLA, UCLA [vcla.stat.ucla.edu]
 // Written by Feng Shi <shi.feng@cs.ucla.edu>,
 //
+
 #include <torch/extension.h>
 
-
 /**
- * Compute a * b^T and save it into out.
+ * Compute a*b^T and save it into out.
  *
  * a \in R^A
  * b \in R^B
  */
 inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
-    for (int i = 0; i < A; i++) {
+    for (int i=0; i<A; i++) {
         float * bi = b;
-        for (int j = 0; j < B; j++) {
+        for (int j=0; j<B; j++) {
             *out += (*a) * (*bi);
             out++;
             bi++;
@@ -23,9 +23,8 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
     }
 }
 
-
 /**
- * Implement a vector matrix product [v * m] and save it into out.
+ * Implement a vector matrix product v*m and save it into out.
  *
  * v \in R^A
  * m \in R^{AxB}
@@ -33,13 +32,13 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
 inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     // TODO: Consider removing the zeroing part and assuming out already
     //       contains 0s
-    for (int i = 0; i < B; i++) {
+    for (int i=0; i<B; i++) {
         out[i] = 0;
     }
 
-    for (int i = 0; i < A; i++) {
+    for (int i=0; i<A; i++) {
         float *oi = out;
-        for (int j = 0; j < B; j++) {
+        for (int j=0; j<B; j++) {
             *oi += (*v) * (*m);
             oi++;
             m++;
@@ -48,7 +47,6 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
-
 /**
  * Implement a vector transposed-matrix product and save it into out.
  *
@@ -56,10 +54,10 @@ inline void vm_dot(float *v, float *m, float *out, int A, int B) {
  * m \in R^{AxB}
  */
 inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
-    for (int i = 0; i < A; i++) {
+    for (int i=0; i<A; i++) {
         float *vi = v;
         float s = 0;
-        for (int j = 0; j < B; j++) {
+        for (int j=0; j<B; j++) {
             s += (*vi) * (*m);
             vi++;
             m++;
@@ -70,14 +68,13 @@ inline void vmt_dot(float *v, float *m, float *out, int A, int B) {
     }
 }
 
-
 /**
- * Compute the causally masked dot products of queries, keys and values.
+ * Compute the segmented products of queries, keys and values.
  *
  * Basically compute V_j' = (Q_{0:j} * K_{0:j}^T) * V_{0:j} for all j. The
  * computation is done efficiently by changing the order of the dot products.
  */
-void causal_prefix_sum(
+void segmented_prefix_prod(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -121,14 +118,13 @@ void causal_prefix_sum(
     }
 }
 
-
 /**
  * Compute the gradients of queries, keys and values given the gradient of the
- * causal_prefix_sum output.
+ * segmented_dot_product output.
  *
  * Make sure that everything is computed in O(N D^2) complexity.
  */
-void causal_prefix_backward(
+void segmented_prefix_backward(
     const torch::Tensor queries,
     const torch::Tensor keys,
     const torch::Tensor values,
@@ -206,18 +202,17 @@ void causal_prefix_backward(
     }
 }
 
-
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def(
-        "causal_prefix_sum",
-        &causal_prefix_sum,
+        "segmented_prefix_prod",
+        &segmented_prefix_prod,
         "Compute the weighted sum of values but attending only to previous "
         "values."
     );
     m.def(
-        "causal_prefix_backward",
-        &causal_prefix_backward,
+        "segmented_prefix_backward",
+        &segmented_prefix_backward,
         "Compute the gradient of queries, keys and values given the gradient "
-        "of causal_prefix_sum."
+        "of segmented_prefix_prod."
     );
 }
