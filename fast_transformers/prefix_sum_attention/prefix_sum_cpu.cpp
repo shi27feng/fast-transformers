@@ -4,7 +4,6 @@
 //
 #include <torch/extension.h>
 
-
 /**
  * Compute a * b^T and save it into out.
  *
@@ -28,7 +27,8 @@ inline void vvt_dot(float *a, float *b, float *out, int A, int B) {
  * Implement a vector matrix product [v * m] and save it into out.
  *
  * v \in R^A
- * m \in R^{AxB}
+ * m \in R^{AxB}: organized in 1D array with [a, a, a, b, b, b, c, c, c]
+ * out \in R^{B}
  */
 inline void vm_dot(float *v, float *m, float *out, int A, int B) {
     // TODO: Consider removing the zeroing part and assuming out already
@@ -97,11 +97,11 @@ void prefix_sum(
     auto pa = product.accessor<float, 4>();
 
     #pragma omp parallel for collapse(2)
-    for (int n=0; n<N; n++) {
-        for (int h=0; h<H; h++) {
+    for (int n = 0; n < N; n++) {
+        for (int h = 0; h < H; h++) {
             auto kv = torch::zeros({E, M}, queries.options());
             float *kvp = kv.data_ptr<float>();
-            for (int l=0; l<L; l++) {
+            for (int l = 0; l < L; l++) {
                 vvt_dot(
                     &ka[n][h][l][0],
                     &va[n][h][l][0],
