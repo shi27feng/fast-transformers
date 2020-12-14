@@ -157,7 +157,7 @@ void prefix_sum(
     const int shared_mem_forward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
 
     for (int l_offset = 0; l_offset < L; l_offset += T) {
-        causal_dot_product_kernel
+        prefix_sum_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_forward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -433,7 +433,7 @@ void prefix_backward(
     int T = int(((12 * 1024) - shared_mem_const) / shared_mem_per_time);
     const int shared_mem_qk_backward = ((T * shared_mem_per_time) + shared_mem_const) * sizeof(float);
     for (int l_offset = 0; l_offset < L; l_offset += T) {
-        causal_dot_backward_query_key_kernel
+        prefix_backward_query_key_kernel
             <<<blocks, MUL_PER_BLOCK, shared_mem_qk_backward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
@@ -460,7 +460,7 @@ void prefix_backward(
     const int shared_mem_v_backward = ((T*shared_mem_per_time) + shared_mem_const) * sizeof(float);
     kv.zero_();
     for (int l_offset=0; l_offset < L; l_offset += T) {
-        causal_dot_backward_value_kernel
+        prefix_backward_value_kernel
             <<<blocks_value, MPB, shared_mem_v_backward>>>(
             queries.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
             keys.packed_accessor32<float, 4, torch::RestrictPtrTraits>(),
