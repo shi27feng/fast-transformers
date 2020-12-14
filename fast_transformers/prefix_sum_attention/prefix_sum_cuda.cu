@@ -44,15 +44,15 @@ __global__ void prefix_sum_kernel(
     const float_accessor values,
     float_accessor kv,
     float_accessor result,
-    const int N,
-    const int H,
-    const int L,
-    const int E,
-    const int M,
+    const int N,                     // batch size  
+    const int H,                     // heads
+    const int L,                     // maximum number of queries
+    const int E,                     // d_model
+    const int M,                     // key dimension
     const int E_per_block,
-    const int blocks_per_sequence,
-    const int T,
-    const int l_offset
+    const int blocks_per_sequence,   // 
+    const int T,                     // 
+    const int l_offset               // 
 ) {
 
     const int sequence_index = blockIdx.x / blocks_per_sequence;
